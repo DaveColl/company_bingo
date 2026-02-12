@@ -4,8 +4,8 @@
   "description": "Coworker Bingo Game mit Foto-Funktion",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#667eea",
-  "theme_color": "#667eea",
+  "background_color": "#051163",
+  "theme_color": "#051163",
   "orientation": "portrait",
   "icons": [
     {
