@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#4CAF50">
+    <meta name="theme-color" content="#051163">
     <title>Kollegen Bingo</title>
     <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="style.css">
@@ -16,7 +16,7 @@
         <div class="bingo-grid" id="bingoGrid"></div>
         
         <div class="button-container">
-            <button id="finalizeBtn" class="finalize-btn" disabled>
+            <button id="finalizeBtn" class="finalize-btn">
                 🎊 Bingo Fertigstellen & Bild Erstellen 🎊
             </button>
             <button id="resetBtn" class="reset-btn">
@@ -38,10 +38,13 @@
 
     <!-- Result Modal -->
     <div id="resultModal" class="modal">
-        <div class="modal-content">
+        <div class="modal-content result-content">
             <span class="close-result">&times;</span>
             <h2>🎉 Dein Bingo ist fertig! 🎉</h2>
-            <canvas id="finalCanvas"></canvas>
+            <p class="result-info">Ausgefüllte Felder: <span id="completedCount">0</span> von 25</p>
+            <div class="canvas-container">
+                <canvas id="finalCanvas"></canvas>
+            </div>
             <button id="downloadBtn" class="download-btn">💾 Bild Herunterladen</button>
         </div>
     </div>
