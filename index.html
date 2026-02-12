@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#4CAF50">
+    <title>Kollegen Bingo</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>🎉 Kollegen Bingo 🎉</h1>
+        <p class="subtitle">Finde Kollegen für jede Frage und mache ein Foto!</p>
+        
+        <div class="bingo-grid" id="bingoGrid"></div>
+        
+        <div class="button-container">
+            <button id="finalizeBtn" class="finalize-btn" disabled>
+                🎊 Bingo Fertigstellen & Bild Erstellen 🎊
+            </button>
+            <button id="resetBtn" class="reset-btn">
+                🔄 Neu Starten
+            </button>
+        </div>
+    </div>
+
+    <!-- Camera Modal -->
+    <div id="cameraModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2 id="modalQuestion"></h2>
+            <video id="video" autoplay playsinline></video>
+            <canvas id="canvas" style="display:none;"></canvas>
+            <button id="captureBtn" class="capture-btn">📸 Foto Machen</button>
+        </div>
+    </div>
+
+    <!-- Result Modal -->
+    <div id="resultModal" class="modal">
+        <div class="modal-content">
+            <span class="close-result">&times;</span>
+            <h2>🎉 Dein Bingo ist fertig! 🎉</h2>
+            <canvas id="finalCanvas"></canvas>
+            <button id="downloadBtn" class="download-btn">💾 Bild Herunterladen</button>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
