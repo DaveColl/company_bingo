@@ -169,7 +169,7 @@ function getOptimalFontSize(ctx, text, maxWidth, maxHeight, startSize) {
     let fontSize = startSize;
     ctx.font = `bold ${fontSize}px Arial`;
     
-    while (fontSize > 16) {
+    while (fontSize > 14) {
         ctx.font = `bold ${fontSize}px Arial`;
         const metrics = ctx.measureText(text);
         
@@ -182,28 +182,41 @@ function getOptimalFontSize(ctx, text, maxWidth, maxHeight, startSize) {
     return fontSize;
 }
 
-// Draw image maintaining aspect ratio and centering
+// Draw image with proper clipping to cell boundaries
 function drawImageCover(ctx, img, x, y, width, height) {
+    // Save context state
+    ctx.save();
+    
+    // Create clipping region for this cell
+    ctx.beginPath();
+    ctx.rect(x, y, width, height);
+    ctx.clip();
+    
+    // Calculate aspect ratios
     const imgAspect = img.width / img.height;
     const cellAspect = width / height;
     
     let drawWidth, drawHeight, offsetX, offsetY;
     
     if (imgAspect > cellAspect) {
-        // Image is wider - fit to height
+        // Image is wider - fit to height, crop sides
         drawHeight = height;
         drawWidth = img.width * (height / img.height);
         offsetX = (width - drawWidth) / 2;
         offsetY = 0;
     } else {
-        // Image is taller - fit to width
+        // Image is taller - fit to width, crop top/bottom
         drawWidth = width;
         drawHeight = img.height * (width / img.width);
         offsetX = 0;
         offsetY = (height - drawHeight) / 2;
     }
     
+    // Draw image (will be clipped to rect)
     ctx.drawImage(img, x + offsetX, y + offsetY, drawWidth, drawHeight);
+    
+    // Restore context state (removes clipping)
+    ctx.restore();
 }
 
 // Create final composite image
@@ -266,11 +279,11 @@ function createFinalImage() {
                 ctx.fillStyle = '#ffffff';
                 ctx.fillRect(x, y, cellSize, cellSize);
                 
-                // Draw image maintaining aspect ratio (cover mode)
+                // Draw image with clipping to maintain boundaries
                 drawImageCover(ctx, img, x, y, cellSize, cellSize);
                 
                 // Add question text at TOP with semi-transparent background
-                const textHeight = 60;
+                const textHeight = 55;
                 ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
                 ctx.fillRect(x, y, cellSize, textHeight);
                 
@@ -278,9 +291,9 @@ function createFinalImage() {
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
                 
-                // Auto-size text to fit without wrapping
-                const maxWidth = cellSize - 20;
-                const fontSize = getOptimalFontSize(ctx, cell.question, maxWidth, textHeight, 28);
+                // Auto-size text to fit without wrapping - more padding for safety
+                const maxWidth = cellSize - 30;
+                const fontSize = getOptimalFontSize(ctx, cell.question, maxWidth, textHeight, 26);
                 ctx.font = `bold ${fontSize}px Arial`;
                 
                 ctx.fillText(cell.question, x + cellSize / 2, y + textHeight / 2);
@@ -297,18 +310,18 @@ function createFinalImage() {
             ctx.fillStyle = '#f8f9fa';
             ctx.fillRect(x, y, cellSize, cellSize);
             
-            // Border for empty cells
+            // Thinner border for empty cells
             ctx.strokeStyle = '#dee2e6';
-            ctx.lineWidth = 3;
+            ctx.lineWidth = 2;
             ctx.strokeRect(x, y, cellSize, cellSize);
             
             ctx.fillStyle = '#2563b8';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             
-            // Auto-size text
-            const maxWidth = cellSize - 40;
-            const fontSize = getOptimalFontSize(ctx, cell.question, maxWidth, cellSize - 40, 36);
+            // Auto-size text with more padding
+            const maxWidth = cellSize - 50;
+            const fontSize = getOptimalFontSize(ctx, cell.question, maxWidth, cellSize - 50, 34);
             ctx.font = `bold ${fontSize}px Arial`;
             
             ctx.fillText(cell.question, x + cellSize / 2, y + cellSize / 2);
