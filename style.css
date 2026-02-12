@@ -6,7 +6,7 @@
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #051163 0%, #0a2080 100%);
+    background: linear-gradient(135deg, #1a4d9e 0%, #2563b8 100%);
     min-height: 100vh;
     padding: 20px;
     color: #333;
@@ -27,7 +27,7 @@ h1 {
 
 .subtitle {
     text-align: center;
-    color: rgba(255,255,255,0.9);
+    color: rgba(255,255,255,0.95);
     margin-bottom: 20px;
     font-size: 0.9em;
 }
@@ -45,7 +45,7 @@ h1 {
 
 .bingo-cell {
     aspect-ratio: 1;
-    background: linear-gradient(135deg, #051163 0%, #0a2080 100%);
+    background: linear-gradient(135deg, #2563b8 0%, #3b82f6 100%);
     border: 2px solid #fff;
     border-radius: 8px;
     display: flex;
@@ -67,8 +67,8 @@ h1 {
 }
 
 .bingo-cell.completed {
-    background: #051163;
-    box-shadow: 0 0 15px rgba(5, 17, 99, 0.8);
+    background: #2563b8;
+    box-shadow: 0 0 15px rgba(37, 99, 184, 0.6);
 }
 
 .bingo-cell img {
@@ -85,22 +85,32 @@ h1 {
     position: relative;
     z-index: 2;
     text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
-    background: rgba(5, 17, 99, 0.85);
     padding: 4px 6px;
     border-radius: 4px;
     width: 100%;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
+    line-height: 1.2;
 }
 
-/* Text moves to top when completed */
+/* Text moves to top when completed - no background, just shadow */
 .bingo-cell.completed {
     align-items: flex-start;
-    padding-top: 8px;
+    padding-top: 6px;
 }
 
 .bingo-cell.completed .text {
-    background: rgba(5, 17, 99, 0.95);
-    font-size: 0.85em;
-    padding: 5px 4px;
+    background: transparent;
+    font-size: 0.75em;
+    padding: 3px 4px;
+    text-shadow: 
+        -1px -1px 3px rgba(0,0,0,0.9),
+        1px -1px 3px rgba(0,0,0,0.9),
+        -1px 1px 3px rgba(0,0,0,0.9),
+        1px 1px 3px rgba(0,0,0,0.9),
+        0 0 5px rgba(0,0,0,0.9);
+    font-weight: 700;
 }
 
 .button-container {
@@ -121,9 +131,9 @@ h1 {
 }
 
 .finalize-btn {
-    background: linear-gradient(135deg, #051163 0%, #0a2080 100%);
+    background: linear-gradient(135deg, #2563b8 0%, #3b82f6 100%);
     color: white;
-    box-shadow: 0 4px 15px rgba(5, 17, 99, 0.4);
+    box-shadow: 0 4px 15px rgba(37, 99, 184, 0.4);
 }
 
 .finalize-btn:active {
@@ -164,6 +174,8 @@ h1 {
 
 .result-content {
     max-width: 95%;
+    max-height: 90vh;
+    overflow-y: auto;
 }
 
 .close, .close-result {
@@ -181,7 +193,7 @@ h1 {
 
 #modalQuestion {
     text-align: center;
-    color: #051163;
+    color: #2563b8;
     margin-bottom: 15px;
     margin-top: 10px;
 }
@@ -197,7 +209,7 @@ h1 {
     width: 100%;
     padding: 15px;
     font-size: 1.2em;
-    background: #051163;
+    background: #2563b8;
     color: white;
     border: none;
     border-radius: 8px;
@@ -211,7 +223,7 @@ h1 {
 
 .result-info {
     text-align: center;
-    color: #051163;
+    color: #2563b8;
     font-weight: bold;
     margin-bottom: 15px;
     font-size: 1.1em;
@@ -235,7 +247,7 @@ h1 {
     width: 100%;
     padding: 15px;
     font-size: 1.2em;
-    background: linear-gradient(135deg, #051163 0%, #0a2080 100%);
+    background: linear-gradient(135deg, #2563b8 0%, #3b82f6 100%);
     color: white;
     border: none;
     border-radius: 8px;
@@ -253,10 +265,11 @@ h1 {
     }
     
     .bingo-cell {
-        font-size: 0.6em;
+        font-size: 0.65em;
+        padding: 3px;
     }
     
     .bingo-cell.completed .text {
-        font-size: 0.75em;
+        font-size: 0.7em;
     }
 }
