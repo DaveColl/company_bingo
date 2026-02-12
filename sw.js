@@ -7,7 +7,6 @@ const urlsToCache = [
   './manifest.json'
 ];
 
-// Install service worker
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
@@ -16,7 +15,6 @@ self.addEventListener('install', event => {
   self.skipWaiting();
 });
 
-// Fetch from cache
 self.addEventListener('fetch', event => {
   event.respondWith(
     caches.match(event.request)
@@ -24,7 +22,6 @@ self.addEventListener('fetch', event => {
   );
 });
 
-// Update service worker
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(cacheNames => {
