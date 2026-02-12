@@ -164,29 +164,46 @@ function capturePhoto() {
     closeCamera();
 }
 
-// Word wrap helper function
-function wrapText(ctx, text, maxWidth) {
-    const words = text.split(' ');
-    const lines = [];
-    let currentLine = '';
+// Auto-fit text helper - returns font size that fits
+function getOptimalFontSize(ctx, text, maxWidth, maxHeight, startSize) {
+    let fontSize = startSize;
+    ctx.font = `bold ${fontSize}px Arial`;
     
-    words.forEach(word => {
-        const testLine = currentLine + (currentLine ? ' ' : '') + word;
-        const metrics = ctx.measureText(testLine);
+    while (fontSize > 16) {
+        ctx.font = `bold ${fontSize}px Arial`;
+        const metrics = ctx.measureText(text);
         
-        if (metrics.width > maxWidth && currentLine !== '') {
-            lines.push(currentLine);
-            currentLine = word;
-        } else {
-            currentLine = testLine;
+        if (metrics.width <= maxWidth) {
+            return fontSize;
         }
-    });
-    
-    if (currentLine) {
-        lines.push(currentLine);
+        fontSize -= 2;
     }
     
-    return lines;
+    return fontSize;
+}
+
+// Draw image maintaining aspect ratio and centering
+function drawImageCover(ctx, img, x, y, width, height) {
+    const imgAspect = img.width / img.height;
+    const cellAspect = width / height;
+    
+    let drawWidth, drawHeight, offsetX, offsetY;
+    
+    if (imgAspect > cellAspect) {
+        // Image is wider - fit to height
+        drawHeight = height;
+        drawWidth = img.width * (height / img.height);
+        offsetX = (width - drawWidth) / 2;
+        offsetY = 0;
+    } else {
+        // Image is taller - fit to width
+        drawWidth = width;
+        drawHeight = img.height * (width / img.width);
+        offsetX = 0;
+        offsetY = (height - drawHeight) / 2;
+    }
+    
+    ctx.drawImage(img, x + offsetX, y + offsetY, drawWidth, drawHeight);
 }
 
 // Create final composite image
@@ -245,33 +262,28 @@ function createFinalImage() {
         if (cell.completed && cell.photo) {
             const img = new Image();
             img.onload = () => {
-                // Draw image
-                ctx.drawImage(img, x, y, cellSize, cellSize);
+                // Draw white background first
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(x, y, cellSize, cellSize);
+                
+                // Draw image maintaining aspect ratio (cover mode)
+                drawImageCover(ctx, img, x, y, cellSize, cellSize);
                 
                 // Add question text at TOP with semi-transparent background
-                const textHeight = 65;
+                const textHeight = 60;
                 ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
                 ctx.fillRect(x, y, cellSize, textHeight);
                 
                 ctx.fillStyle = '#ffffff';
-                ctx.font = 'bold 26px Arial';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
                 
-                // Handle long text
+                // Auto-size text to fit without wrapping
                 const maxWidth = cellSize - 20;
-                const lines = wrapText(ctx, cell.question, maxWidth);
+                const fontSize = getOptimalFontSize(ctx, cell.question, maxWidth, textHeight, 28);
+                ctx.font = `bold ${fontSize}px Arial`;
                 
-                if (lines.length > 2) {
-                    ctx.font = 'bold 22px Arial';
-                }
-                
-                const lineHeight = 28;
-                const startY = y + textHeight / 2 - ((lines.length - 1) * lineHeight) / 2;
-                
-                lines.forEach((line, i) => {
-                    ctx.fillText(line, x + cellSize / 2, startY + i * lineHeight);
-                });
+                ctx.fillText(cell.question, x + cellSize / 2, y + textHeight / 2);
                 
                 checkComplete();
             };
@@ -291,23 +303,15 @@ function createFinalImage() {
             ctx.strokeRect(x, y, cellSize, cellSize);
             
             ctx.fillStyle = '#2563b8';
-            ctx.font = 'bold 32px Arial';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             
+            // Auto-size text
             const maxWidth = cellSize - 40;
-            const lines = wrapText(ctx, cell.question, maxWidth);
+            const fontSize = getOptimalFontSize(ctx, cell.question, maxWidth, cellSize - 40, 36);
+            ctx.font = `bold ${fontSize}px Arial`;
             
-            if (lines.length > 3) {
-                ctx.font = 'bold 28px Arial';
-            }
-            
-            const lineHeight = 40;
-            const startY = y + cellSize / 2 - ((lines.length - 1) * lineHeight) / 2;
-            
-            lines.forEach((line, i) => {
-                ctx.fillText(line, x + cellSize / 2, startY + i * lineHeight);
-            });
+            ctx.fillText(cell.question, x + cellSize / 2, y + cellSize / 2);
             
             checkComplete();
         }
