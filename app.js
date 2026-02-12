@@ -164,6 +164,31 @@ function capturePhoto() {
     closeCamera();
 }
 
+// Word wrap helper function
+function wrapText(ctx, text, maxWidth) {
+    const words = text.split(' ');
+    const lines = [];
+    let currentLine = '';
+    
+    words.forEach(word => {
+        const testLine = currentLine + (currentLine ? ' ' : '') + word;
+        const metrics = ctx.measureText(testLine);
+        
+        if (metrics.width > maxWidth && currentLine !== '') {
+            lines.push(currentLine);
+            currentLine = word;
+        } else {
+            currentLine = testLine;
+        }
+    });
+    
+    if (currentLine) {
+        lines.push(currentLine);
+    }
+    
+    return lines;
+}
+
 // Create final composite image
 function createFinalImage() {
     const completedCount = bingoData.filter(cell => cell.completed).length;
@@ -197,11 +222,18 @@ function createFinalImage() {
     finalCanvas.height = totalSize;
     
     // Background - Aareon Blue
-    ctx.fillStyle = '#051163';
+    ctx.fillStyle = '#2563b8';
     ctx.fillRect(0, 0, totalSize, totalSize);
     
-    let loadedCount = 0;
+    let processedCount = 0;
     const totalCells = bingoData.length;
+    
+    const checkComplete = () => {
+        processedCount++;
+        if (processedCount === totalCells) {
+            showResultModal(completedCount);
+        }
+    };
     
     bingoData.forEach((cell, index) => {
         const row = Math.floor(index / gridSize);
@@ -216,79 +248,70 @@ function createFinalImage() {
                 // Draw image
                 ctx.drawImage(img, x, y, cellSize, cellSize);
                 
-                // Add question text at TOP of image
-                const textHeight = 70;
-                ctx.fillStyle = 'rgba(5, 17, 99, 0.95)';
+                // Add question text at TOP with semi-transparent background
+                const textHeight = 65;
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
                 ctx.fillRect(x, y, cellSize, textHeight);
                 
                 ctx.fillStyle = '#ffffff';
-                ctx.font = 'bold 28px Arial';
+                ctx.font = 'bold 26px Arial';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
                 
-                // Word wrap for long text
-                const words = cell.question.split(' ');
+                // Handle long text
                 const maxWidth = cellSize - 20;
-                let line = '';
-                let lineY = y + textHeight / 2;
+                const lines = wrapText(ctx, cell.question, maxWidth);
                 
-                if (words.length > 3) {
-                    ctx.font = 'bold 24px Arial';
+                if (lines.length > 2) {
+                    ctx.font = 'bold 22px Arial';
                 }
                 
-                ctx.fillText(cell.question, x + cellSize / 2, lineY);
+                const lineHeight = 28;
+                const startY = y + textHeight / 2 - ((lines.length - 1) * lineHeight) / 2;
                 
-                loadedCount++;
-                if (loadedCount === completedCount) {
-                    showResultModal(completedCount);
-                }
+                lines.forEach((line, i) => {
+                    ctx.fillText(line, x + cellSize / 2, startY + i * lineHeight);
+                });
+                
+                checkComplete();
+            };
+            img.onerror = () => {
+                console.error('Failed to load image for cell', index);
+                checkComplete();
             };
             img.src = cell.photo;
         } else {
             // Draw empty cell with question
-            ctx.fillStyle = '#ffffff';
+            ctx.fillStyle = '#f8f9fa';
             ctx.fillRect(x, y, cellSize, cellSize);
             
-            ctx.fillStyle = '#051163';
+            // Border for empty cells
+            ctx.strokeStyle = '#dee2e6';
+            ctx.lineWidth = 3;
+            ctx.strokeRect(x, y, cellSize, cellSize);
+            
+            ctx.fillStyle = '#2563b8';
             ctx.font = 'bold 32px Arial';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             
-            // Word wrap
-            const words = cell.question.split(' ');
-            let line = '';
-            let lines = [];
+            const maxWidth = cellSize - 40;
+            const lines = wrapText(ctx, cell.question, maxWidth);
             
-            words.forEach(word => {
-                const testLine = line + word + ' ';
-                const metrics = ctx.measureText(testLine);
-                if (metrics.width > cellSize - 40 && line !== '') {
-                    lines.push(line);
-                    line = word + ' ';
-                } else {
-                    line = testLine;
-                }
-            });
-            lines.push(line);
+            if (lines.length > 3) {
+                ctx.font = 'bold 28px Arial';
+            }
             
             const lineHeight = 40;
             const startY = y + cellSize / 2 - ((lines.length - 1) * lineHeight) / 2;
             
             lines.forEach((line, i) => {
-                ctx.fillText(line.trim(), x + cellSize / 2, startY + i * lineHeight);
+                ctx.fillText(line, x + cellSize / 2, startY + i * lineHeight);
             });
             
-            loadedCount++;
-            if (loadedCount === totalCells) {
-                showResultModal(completedCount);
-            }
+            checkComplete();
         }
     });
-    
-    // If no images to load, show immediately
-    if (completedCount === 0) {
-        showResultModal(0);
-    }
 }
 
 // Show result modal
