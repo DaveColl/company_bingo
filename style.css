@@ -6,7 +6,7 @@
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #051163 0%, #0a2080 100%);
     min-height: 100vh;
     padding: 20px;
     color: #333;
@@ -45,7 +45,7 @@ h1 {
 
 .bingo-cell {
     aspect-ratio: 1;
-    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    background: linear-gradient(135deg, #051163 0%, #0a2080 100%);
     border: 2px solid #fff;
     border-radius: 8px;
     display: flex;
@@ -67,8 +67,8 @@ h1 {
 }
 
 .bingo-cell.completed {
-    background: #4CAF50;
-    box-shadow: 0 0 15px rgba(76, 175, 80, 0.6);
+    background: #051163;
+    box-shadow: 0 0 15px rgba(5, 17, 99, 0.8);
 }
 
 .bingo-cell img {
@@ -83,12 +83,24 @@ h1 {
 
 .bingo-cell .text {
     position: relative;
-    z-index: 1;
-    text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+    z-index: 2;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+    background: rgba(5, 17, 99, 0.85);
+    padding: 4px 6px;
+    border-radius: 4px;
+    width: 100%;
+}
+
+/* Text moves to top when completed */
+.bingo-cell.completed {
+    align-items: flex-start;
+    padding-top: 8px;
 }
 
 .bingo-cell.completed .text {
-    display: none;
+    background: rgba(5, 17, 99, 0.95);
+    font-size: 0.85em;
+    padding: 5px 4px;
 }
 
 .button-container {
@@ -109,22 +121,17 @@ h1 {
 }
 
 .finalize-btn {
-    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    background: linear-gradient(135deg, #051163 0%, #0a2080 100%);
     color: white;
+    box-shadow: 0 4px 15px rgba(5, 17, 99, 0.4);
 }
 
-.finalize-btn:disabled {
-    background: #ccc;
-    cursor: not-allowed;
-    opacity: 0.6;
-}
-
-.finalize-btn:not(:disabled):active {
+.finalize-btn:active {
     transform: scale(0.98);
 }
 
 .reset-btn {
-    background: #ff6b6b;
+    background: #6c757d;
     color: white;
 }
 
@@ -155,6 +162,10 @@ h1 {
     position: relative;
 }
 
+.result-content {
+    max-width: 95%;
+}
+
 .close, .close-result {
     color: #aaa;
     float: right;
@@ -170,7 +181,7 @@ h1 {
 
 #modalQuestion {
     text-align: center;
-    color: #667eea;
+    color: #051163;
     margin-bottom: 15px;
     margin-top: 10px;
 }
@@ -186,7 +197,7 @@ h1 {
     width: 100%;
     padding: 15px;
     font-size: 1.2em;
-    background: #4CAF50;
+    background: #051163;
     color: white;
     border: none;
     border-radius: 8px;
@@ -198,18 +209,33 @@ h1 {
     transform: scale(0.98);
 }
 
-#finalCanvas {
-    width: 100%;
-    border-radius: 8px;
+.result-info {
+    text-align: center;
+    color: #051163;
+    font-weight: bold;
+    margin-bottom: 15px;
+    font-size: 1.1em;
+}
+
+.canvas-container {
+    max-width: 100%;
+    overflow-x: auto;
     margin: 20px 0;
+}
+
+#finalCanvas {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
     box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    display: block;
 }
 
 .download-btn {
     width: 100%;
     padding: 15px;
     font-size: 1.2em;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #051163 0%, #0a2080 100%);
     color: white;
     border: none;
     border-radius: 8px;
@@ -228,5 +254,9 @@ h1 {
     
     .bingo-cell {
         font-size: 0.6em;
+    }
+    
+    .bingo-cell.completed .text {
+        font-size: 0.75em;
     }
 }
