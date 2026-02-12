@@ -2,8 +2,10 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#051163">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <meta name="theme-color" content="#2563b8">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <title>Kollegen Bingo</title>
     <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="style.css">
@@ -42,6 +44,7 @@
             <span class="close-result">&times;</span>
             <h2>🎉 Dein Bingo ist fertig! 🎉</h2>
             <p class="result-info">Ausgefüllte Felder: <span id="completedCount">0</span> von 25</p>
+            <p class="zoom-hint">💡 Tipp: Zoome mit zwei Fingern ins Bild!</p>
             <div class="canvas-container">
                 <canvas id="finalCanvas"></canvas>
             </div>
