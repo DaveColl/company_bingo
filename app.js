@@ -1,5 +1,5 @@
 // Bingo Questions in German
-const questions = [
+const allQuestions = [
     "Hat Kinder",
     "Hat ein Haustier",
     "Spielt ein Instrument",
@@ -9,16 +9,16 @@ const questions = [
     "Hat einen Garten",
     "Macht Yoga",
     "Kocht gerne",
-    "Ist links­händer",
+    "Ist Linkshänder",
     "Trägt eine Brille",
-    "Hat schon mal im Ausland gelebt",
+    "Hat im Ausland gelebt",
     "Spielt Fußball",
     "Ist Vegetarier/Vegan",
     "Hat Geschwister",
     "Kann ein Lied singen",
     "Liebt Horrorfilme",
     "Sammelt etwas",
-    "Hat einen Tattoo",
+    "Hat ein Tattoo",
     "Liest gerne Bücher",
     "Läuft Marathon",
     "Spielt Videospiele",
@@ -31,12 +31,21 @@ let bingoData = [];
 let currentCellIndex = null;
 let videoStream = null;
 
+// Shuffle array function
+function shuffleArray(array) {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+}
+
 // Initialize the app
 function init() {
     loadBingoData();
     renderBingoGrid();
     setupEventListeners();
-    checkCompletion();
 }
 
 // Load saved data from localStorage
@@ -45,7 +54,9 @@ function loadBingoData() {
     if (saved) {
         bingoData = JSON.parse(saved);
     } else {
-        bingoData = questions.map((q, i) => ({
+        // Randomize questions for new game
+        const shuffledQuestions = shuffleArray(allQuestions);
+        bingoData = shuffledQuestions.map((q, i) => ({
             id: i,
             question: q,
             completed: false,
@@ -151,17 +162,27 @@ function capturePhoto() {
     saveBingoData();
     renderBingoGrid();
     closeCamera();
-    checkCompletion();
-}
-
-// Check if all cells are completed
-function checkCompletion() {
-    const allCompleted = bingoData.every(cell => cell.completed);
-    document.getElementById('finalizeBtn').disabled = !allCompleted;
 }
 
 // Create final composite image
 function createFinalImage() {
+    const completedCount = bingoData.filter(cell => cell.completed).length;
+    
+    if (completedCount === 0) {
+        alert('Bitte mache mindestens ein Foto, bevor du das Bingo fertigstellst!');
+        return;
+    }
+    
+    // Show confirmation if not all fields completed
+    if (completedCount < 25) {
+        const confirmed = confirm(
+            `Du hast ${completedCount} von 25 Feldern ausgefüllt.\n\n` +
+            'Möchtest du das Bingo trotzdem fertigstellen?\n\n' +
+            'Nicht ausgefüllte Felder werden leer angezeigt.'
+        );
+        if (!confirmed) return;
+    }
+    
     const finalCanvas = document.getElementById('finalCanvas');
     const ctx = finalCanvas.getContext('2d');
     
@@ -175,12 +196,12 @@ function createFinalImage() {
     finalCanvas.width = totalSize;
     finalCanvas.height = totalSize;
     
-    // Background
-    ctx.fillStyle = '#ffffff';
+    // Background - Aareon Blue
+    ctx.fillStyle = '#051163';
     ctx.fillRect(0, 0, totalSize, totalSize);
     
     let loadedCount = 0;
-    const totalImages = bingoData.length;
+    const totalCells = bingoData.length;
     
     bingoData.forEach((cell, index) => {
         const row = Math.floor(index / gridSize);
@@ -189,33 +210,90 @@ function createFinalImage() {
         const x = padding + (col * (cellSize + gap));
         const y = padding + (row * (cellSize + gap));
         
-        if (cell.photo) {
+        if (cell.completed && cell.photo) {
             const img = new Image();
             img.onload = () => {
+                // Draw image
                 ctx.drawImage(img, x, y, cellSize, cellSize);
                 
-                // Add question text overlay
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
-                ctx.fillRect(x, y + cellSize - 60, cellSize, 60);
+                // Add question text at TOP of image
+                const textHeight = 70;
+                ctx.fillStyle = 'rgba(5, 17, 99, 0.95)';
+                ctx.fillRect(x, y, cellSize, textHeight);
                 
                 ctx.fillStyle = '#ffffff';
-                ctx.font = 'bold 24px Arial';
+                ctx.font = 'bold 28px Arial';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
-                ctx.fillText(cell.question, x + cellSize / 2, y + cellSize - 30);
+                
+                // Word wrap for long text
+                const words = cell.question.split(' ');
+                const maxWidth = cellSize - 20;
+                let line = '';
+                let lineY = y + textHeight / 2;
+                
+                if (words.length > 3) {
+                    ctx.font = 'bold 24px Arial';
+                }
+                
+                ctx.fillText(cell.question, x + cellSize / 2, lineY);
                 
                 loadedCount++;
-                if (loadedCount === totalImages) {
-                    showResultModal();
+                if (loadedCount === completedCount) {
+                    showResultModal(completedCount);
                 }
             };
             img.src = cell.photo;
+        } else {
+            // Draw empty cell with question
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(x, y, cellSize, cellSize);
+            
+            ctx.fillStyle = '#051163';
+            ctx.font = 'bold 32px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            
+            // Word wrap
+            const words = cell.question.split(' ');
+            let line = '';
+            let lines = [];
+            
+            words.forEach(word => {
+                const testLine = line + word + ' ';
+                const metrics = ctx.measureText(testLine);
+                if (metrics.width > cellSize - 40 && line !== '') {
+                    lines.push(line);
+                    line = word + ' ';
+                } else {
+                    line = testLine;
+                }
+            });
+            lines.push(line);
+            
+            const lineHeight = 40;
+            const startY = y + cellSize / 2 - ((lines.length - 1) * lineHeight) / 2;
+            
+            lines.forEach((line, i) => {
+                ctx.fillText(line.trim(), x + cellSize / 2, startY + i * lineHeight);
+            });
+            
+            loadedCount++;
+            if (loadedCount === totalCells) {
+                showResultModal(completedCount);
+            }
         }
     });
+    
+    // If no images to load, show immediately
+    if (completedCount === 0) {
+        showResultModal(0);
+    }
 }
 
 // Show result modal
-function showResultModal() {
+function showResultModal(completedCount) {
+    document.getElementById('completedCount').textContent = completedCount;
     document.getElementById('resultModal').style.display = 'block';
 }
 
@@ -228,14 +306,15 @@ function closeResultModal() {
 function downloadFinalImage() {
     const canvas = document.getElementById('finalCanvas');
     const link = document.createElement('a');
-    link.download = 'kollegen-bingo-' + Date.now() + '.jpg';
+    const timestamp = new Date().toISOString().slice(0,10);
+    link.download = `kollegen-bingo-${timestamp}.jpg`;
     link.href = canvas.toDataURL('image/jpeg', 0.9);
     link.click();
 }
 
 // Reset bingo
 function resetBingo() {
-    if (confirm('Möchtest du wirklich alle Daten löschen und neu starten?')) {
+    if (confirm('Möchtest du wirklich alle Daten löschen und neu starten?\n\nDie Fragen werden neu gemischt!')) {
         localStorage.removeItem('bingoData');
         bingoData = [];
         init();
