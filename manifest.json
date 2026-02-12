@@ -3,9 +3,9 @@
   "short_name": "Bingo",
   "description": "Coworker Bingo Game mit Foto-Funktion",
   "start_url": "./index.html",
-  "display": "standalone",
-  "background_color": "#051163",
-  "theme_color": "#051163",
+  "display": "fullscreen",
+  "background_color": "#2563b8",
+  "theme_color": "#2563b8",
   "orientation": "portrait",
   "icons": [
     {
