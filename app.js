@@ -30,6 +30,7 @@ const allQuestions = [
 let bingoData = [];
 let currentCellIndex = null;
 let videoStream = null;
+let currentFacingMode = 'environment'; // 'environment' = back camera, 'user' = front camera
 
 // Shuffle array function
 function shuffleArray(array) {
@@ -102,9 +103,48 @@ function setupEventListeners() {
     document.querySelector('.close').addEventListener('click', closeCamera);
     document.querySelector('.close-result').addEventListener('click', closeResultModal);
     document.getElementById('captureBtn').addEventListener('click', capturePhoto);
+    document.getElementById('switchCameraBtn').addEventListener('click', switchCamera);
     document.getElementById('finalizeBtn').addEventListener('click', createFinalImage);
     document.getElementById('downloadBtn').addEventListener('click', downloadFinalImage);
     document.getElementById('resetBtn').addEventListener('click', resetBingo);
+}
+
+// Start camera with specific facing mode
+async function startCamera(facingMode) {
+    const video = document.getElementById('video');
+    
+    try {
+        // Stop existing stream if any
+        if (videoStream) {
+            videoStream.getTracks().forEach(track => track.stop());
+        }
+        
+        // Request new stream with specified facing mode
+        videoStream = await navigator.mediaDevices.getUserMedia({ 
+            video: { facingMode: facingMode },
+            audio: false 
+        });
+        
+        video.srcObject = videoStream;
+        currentFacingMode = facingMode;
+        
+        return true;
+    } catch (error) {
+        console.error('Camera error:', error);
+        
+        // Fallback: try without facingMode constraint if specific camera fails
+        try {
+            videoStream = await navigator.mediaDevices.getUserMedia({ 
+                video: true,
+                audio: false 
+            });
+            video.srcObject = videoStream;
+            return true;
+        } catch (fallbackError) {
+            alert('Kamera-Zugriff wurde verweigert. Bitte erlaube den Zugriff in den Browser-Einstellungen.');
+            return false;
+        }
+    }
 }
 
 // Open camera modal
@@ -112,21 +152,28 @@ async function openCamera(index) {
     currentCellIndex = index;
     const modal = document.getElementById('cameraModal');
     const modalQuestion = document.getElementById('modalQuestion');
-    const video = document.getElementById('video');
     
     modalQuestion.textContent = bingoData[index].question;
     modal.style.display = 'block';
     
-    try {
-        videoStream = await navigator.mediaDevices.getUserMedia({ 
-            video: { facingMode: 'environment' },
-            audio: false 
-        });
-        video.srcObject = videoStream;
-    } catch (error) {
-        alert('Kamera-Zugriff wurde verweigert. Bitte erlaube den Zugriff in den Browser-Einstellungen.');
+    // Start with back camera by default
+    const success = await startCamera('environment');
+    if (!success) {
         closeCamera();
     }
+}
+
+// Switch between front and back camera
+async function switchCamera() {
+    const btn = document.getElementById('switchCameraBtn');
+    
+    // Add rotation animation
+    btn.classList.add('rotating');
+    setTimeout(() => btn.classList.remove('rotating'), 500);
+    
+    // Toggle facing mode
+    const newFacingMode = currentFacingMode === 'environment' ? 'user' : 'environment';
+    await startCamera(newFacingMode);
 }
 
 // Close camera modal
@@ -141,6 +188,9 @@ function closeCamera() {
     
     video.srcObject = null;
     modal.style.display = 'none';
+    
+    // Reset to back camera for next time
+    currentFacingMode = 'environment';
 }
 
 // Capture photo
