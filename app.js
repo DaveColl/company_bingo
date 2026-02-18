@@ -27,10 +27,40 @@ const allQuestions = [
     "Ist im selben Monat geboren"
 ];
 
+// APP VERSION - increment this when you make changes
+const APP_VERSION = '1.7';
+
+// Check for updates and force reload if needed
+function checkForUpdates() {
+    const currentVersion = localStorage.getItem('appVersion');
+    
+    if (currentVersion !== APP_VERSION) {
+        console.log(`Updating from ${currentVersion} to ${APP_VERSION}`);
+        localStorage.setItem('appVersion', APP_VERSION);
+        
+        // Clear service worker cache
+        if ('caches' in window) {
+            caches.keys().then(names => {
+                names.forEach(name => {
+                    caches.delete(name);
+                });
+            });
+        }
+        
+        // Reload page to get fresh content
+        if (currentVersion !== null) {
+            window.location.reload(true);
+        }
+    }
+}
+
+// Run update check immediately
+checkForUpdates();
+
 let bingoData = [];
 let currentCellIndex = null;
 let videoStream = null;
-let currentFacingMode = 'environment'; // 'environment' = back camera, 'user' = front camera
+let currentFacingMode = 'environment';
 
 // Shuffle array function
 function shuffleArray(array) {
