@@ -89,7 +89,6 @@ h1 {
     border-radius: 4px;
     width: 100%;
     font-weight: 600;
-    /* Dynamic text sizing - starts at 0.7em, scales down if needed */
     font-size: clamp(0.5em, 0.7em, 2vw);
     line-height: 1.2;
     display: flex;
@@ -99,7 +98,6 @@ h1 {
     hyphens: none;
 }
 
-/* Text moves to top when completed - no background, just shadow */
 .bingo-cell.completed {
     align-items: flex-start;
     padding-top: 4px;
@@ -178,6 +176,10 @@ h1 {
     position: relative;
 }
 
+.camera-modal {
+    max-width: 600px;
+}
+
 .result-content {
     max-width: 95%;
     max-height: 90vh;
@@ -204,11 +206,58 @@ h1 {
     margin-top: 10px;
 }
 
+.video-container {
+    position: relative;
+    width: 100%;
+    margin-bottom: 15px;
+}
+
 #video {
     width: 100%;
     border-radius: 8px;
     background: #000;
-    margin-bottom: 15px;
+    display: block;
+}
+
+.switch-camera-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.9);
+    border: 2px solid #2563b8;
+    font-size: 24px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    z-index: 10;
+}
+
+.switch-camera-btn:hover {
+    background: rgba(255, 255, 255, 1);
+    transform: scale(1.05);
+}
+
+.switch-camera-btn:active {
+    transform: scale(0.95) rotate(180deg);
+}
+
+.switch-camera-btn.rotating {
+    animation: rotate 0.5s ease;
+}
+
+@keyframes rotate {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 .capture-btn {
@@ -290,5 +339,11 @@ h1 {
     
     .bingo-cell.completed .text {
         font-size: clamp(0.4em, 0.6em, 1.8vw);
+    }
+    
+    .switch-camera-btn {
+        width: 45px;
+        height: 45px;
+        font-size: 20px;
     }
 }
