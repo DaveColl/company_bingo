@@ -29,10 +29,15 @@
 
     <!-- Camera Modal -->
     <div id="cameraModal" class="modal">
-        <div class="modal-content">
+        <div class="modal-content camera-modal">
             <span class="close">&times;</span>
             <h2 id="modalQuestion"></h2>
-            <video id="video" autoplay playsinline></video>
+            <div class="video-container">
+                <video id="video" autoplay playsinline></video>
+                <button id="switchCameraBtn" class="switch-camera-btn" title="Kamera wechseln">
+                    🔄
+                </button>
+            </div>
             <canvas id="canvas" style="display:none;"></canvas>
             <button id="captureBtn" class="capture-btn">📸 Foto Machen</button>
         </div>
