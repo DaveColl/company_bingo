@@ -11,15 +11,15 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <title>Kollegen Bingo</title>
     <link rel="manifest" href="manifest.json">
-    <link rel="stylesheet" href="style.css?v=1.7">
+    <link rel="stylesheet" href="style.css?v=1.8">
 </head>
 <body>
     <div class="container">
         <h1>🎉 Kollegen Bingo 🎉</h1>
         <p class="subtitle">Finde Kollegen für jede Frage und mache ein Foto!</p>
-        
+
         <div class="bingo-grid" id="bingoGrid"></div>
-        
+
         <div class="button-container">
             <button id="finalizeBtn" class="finalize-btn">
                 🎊 Bingo Fertigstellen & Bild Erstellen 🎊
@@ -37,29 +37,16 @@
             <h2 id="modalQuestion"></h2>
             <div class="video-container">
                 <video id="video" autoplay playsinline></video>
-                <button id="switchCameraBtn" class="switch-camera-btn" title="Kamera wechseln">
-                    🔄
-                </button>
+                <button id="switchCameraBtn" class="switch-camera-btn" title="Kamera wechseln">🔄</button>
             </div>
             <canvas id="canvas" style="display:none;"></canvas>
             <button id="captureBtn" class="capture-btn">📸 Foto Machen</button>
         </div>
     </div>
 
-    <!-- Result Modal -->
-    <div id="resultModal" class="modal">
-        <div class="modal-content result-content">
-            <span class="close-result">&times;</span>
-            <h2>🎉 Dein Bingo ist fertig! 🎉</h2>
-            <p class="result-info">Ausgefüllte Felder: <span id="completedCount">0</span> von 25</p>
-            <p class="zoom-hint">💡 Tipp: Zoome mit zwei Fingern ins Bild!</p>
-            <div class="canvas-container">
-                <canvas id="finalCanvas"></canvas>
-            </div>
-            <button id="downloadBtn" class="download-btn">💾 Bild Herunterladen</button>
-        </div>
-    </div>
+    <!-- Hidden canvas for final image rendering -->
+    <canvas id="finalCanvas" style="display:none;"></canvas>
 
-    <script src="app.js?v=1.7"></script>
+    <script src="app.js?v=1.8"></script>
 </body>
 </html>
