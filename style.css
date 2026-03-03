@@ -68,6 +68,8 @@ h1 {
 .bingo-cell.completed {
     background: #2563b8;
     box-shadow: 0 0 15px rgba(37, 99, 184, 0.6);
+    align-items: flex-start;
+    padding-top: 4px;
 }
 
 .bingo-cell img {
@@ -98,21 +100,16 @@ h1 {
     hyphens: none;
 }
 
-.bingo-cell.completed {
-    align-items: flex-start;
-    padding-top: 4px;
-}
-
 .bingo-cell.completed .text {
     background: transparent;
     font-size: clamp(0.45em, 0.65em, 1.8vw);
     padding: 3px 4px;
-    text-shadow: 
+    text-shadow:
         -1px -1px 3px rgba(0,0,0,0.95),
-        1px -1px 3px rgba(0,0,0,0.95),
-        -1px 1px 3px rgba(0,0,0,0.95),
-        1px 1px 3px rgba(0,0,0,0.95),
-        0 0 6px rgba(0,0,0,0.95);
+         1px -1px 3px rgba(0,0,0,0.95),
+        -1px  1px 3px rgba(0,0,0,0.95),
+         1px  1px 3px rgba(0,0,0,0.95),
+         0    0   6px rgba(0,0,0,0.95);
     font-weight: 700;
     align-items: flex-start;
 }
@@ -123,7 +120,8 @@ h1 {
     gap: 10px;
 }
 
-.finalize-btn, .reset-btn {
+.finalize-btn,
+.reset-btn {
     width: 100%;
     padding: 15px;
     font-size: 1.1em;
@@ -140,7 +138,12 @@ h1 {
     box-shadow: 0 4px 15px rgba(37, 99, 184, 0.4);
 }
 
-.finalize-btn:active {
+.finalize-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.finalize-btn:not(:disabled):active {
     transform: scale(0.98);
 }
 
@@ -153,7 +156,7 @@ h1 {
     transform: scale(0.98);
 }
 
-/* Modal Styles */
+/* Modal */
 .modal {
     display: none;
     position: fixed;
@@ -180,13 +183,7 @@ h1 {
     max-width: 600px;
 }
 
-.result-content {
-    max-width: 95%;
-    max-height: 90vh;
-    overflow-y: auto;
-}
-
-.close, .close-result {
+.close {
     color: #aaa;
     float: right;
     font-size: 28px;
@@ -195,7 +192,7 @@ h1 {
     line-height: 20px;
 }
 
-.close:hover, .close-result:hover {
+.close:hover {
     color: #000;
 }
 
@@ -238,11 +235,6 @@ h1 {
     z-index: 10;
 }
 
-.switch-camera-btn:hover {
-    background: rgba(255, 255, 255, 1);
-    transform: scale(1.05);
-}
-
 .switch-camera-btn:active {
     transform: scale(0.95) rotate(180deg);
 }
@@ -252,12 +244,8 @@ h1 {
 }
 
 @keyframes rotate {
-    from {
-        transform: rotate(0deg);
-    }
-    to {
-        transform: rotate(360deg);
-    }
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
 }
 
 .capture-btn {
@@ -276,71 +264,19 @@ h1 {
     transform: scale(0.98);
 }
 
-.result-info {
-    text-align: center;
-    color: #2563b8;
-    font-weight: bold;
-    margin-bottom: 10px;
-    font-size: 1.1em;
-}
-
-.zoom-hint {
-    text-align: center;
-    color: #6c757d;
-    font-size: 0.9em;
-    margin-bottom: 15px;
-}
-
-.canvas-container {
-    width: 100%;
-    overflow: auto;
-    margin: 20px 0;
-    touch-action: pan-x pan-y pinch-zoom;
-    -webkit-overflow-scrolling: touch;
-}
-
-#finalCanvas {
-    width: 100%;
-    height: auto;
-    border-radius: 8px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-    display: block;
-    touch-action: pan-x pan-y pinch-zoom;
-}
-
-.download-btn {
-    width: 100%;
-    padding: 15px;
-    font-size: 1.2em;
-    background: linear-gradient(135deg, #2563b8 0%, #3b82f6 100%);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: bold;
-}
-
-.download-btn:active {
-    transform: scale(0.98);
-}
-
 @media (max-width: 480px) {
-    h1 {
-        font-size: 1.5em;
-    }
-    
-    .bingo-cell {
-        padding: 3px;
-    }
-    
+    h1 { font-size: 1.5em; }
+
+    .bingo-cell { padding: 3px; }
+
     .bingo-cell .text {
         font-size: clamp(0.45em, 0.65em, 2vw);
     }
-    
+
     .bingo-cell.completed .text {
         font-size: clamp(0.4em, 0.6em, 1.8vw);
     }
-    
+
     .switch-camera-btn {
         width: 45px;
         height: 45px;
