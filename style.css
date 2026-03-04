@@ -126,6 +126,7 @@ h1 {
     text-align: center;
     outline: none;
     transition: border-color 0.2s, background 0.2s;
+    margin-bottom: 14px;
 }
 .group-name-input::placeholder { color: rgba(255,255,255,0.6); }
 .group-name-input:focus {
