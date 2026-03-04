@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kollegen-bingo-v8';
+const CACHE_NAME = 'kollegen-bingo-v9';
 const urlsToCache = [
   './',
   './index.html',
