@@ -17,7 +17,7 @@ const allQuestions = [
     "Kann ein Lied singen"
 ];
 
-const APP_VERSION = '1.9';
+const APP_VERSION = '2.0';
 
 function checkForUpdates() {
     const currentVersion = localStorage.getItem('appVersion');
@@ -50,8 +50,18 @@ function shuffleArray(array) {
 
 function init() {
     loadBingoData();
+    loadGroupName();
     renderBingoGrid();
     setupEventListeners();
+}
+
+function loadGroupName() {
+    const saved = localStorage.getItem('bingoGroupName') || '';
+    document.getElementById('groupNameInput').value = saved;
+}
+
+function saveGroupName(value) {
+    localStorage.setItem('bingoGroupName', value);
 }
 
 function loadBingoData() {
@@ -240,17 +250,31 @@ function createFinalImage() {
     const finalCanvas = document.getElementById('finalCanvas');
     const ctx = finalCanvas.getContext('2d');
 
+    const groupName = localStorage.getItem('bingoGroupName') || '';
     const gridSize = 4;
     const cellSize = 400;
     const gap = 10;
     const padding = 20;
-    const totalSize = (cellSize * gridSize) + (gap * (gridSize - 1)) + (padding * 2);
+    const headerHeight = groupName.trim() ? 80 : 0;
 
-    finalCanvas.width = totalSize;
-    finalCanvas.height = totalSize;
+    const totalWidth  = (cellSize * gridSize) + (gap * (gridSize - 1)) + (padding * 2);
+    const totalHeight = totalWidth + headerHeight;
 
+    finalCanvas.width  = totalWidth;
+    finalCanvas.height = totalHeight;
+
+    // Background
     ctx.fillStyle = '#2563b8';
-    ctx.fillRect(0, 0, totalSize, totalSize);
+    ctx.fillRect(0, 0, totalWidth, totalHeight);
+
+    // Group name header
+    if (groupName.trim()) {
+        ctx.fillStyle = '#ffffff';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.font = 'bold 48px Arial';
+        ctx.fillText(groupName, totalWidth / 2, headerHeight / 2);
+    }
 
     let processedCount = 0;
     const totalCells = bingoData.length;
@@ -260,7 +284,8 @@ function createFinalImage() {
         if (processedCount === totalCells) {
             const link = document.createElement('a');
             const timestamp = new Date().toISOString().slice(0, 10);
-            link.download = `kollegen-bingo-${timestamp}.jpg`;
+            const safeName = groupName.trim().replace(/[^a-z0-9]/gi, '-') || 'bingo';
+            link.download = `kollegen-bingo-${safeName}-${timestamp}.jpg`;
             link.href = finalCanvas.toDataURL('image/jpeg', 0.9);
             link.click();
 
@@ -273,7 +298,7 @@ function createFinalImage() {
         const row = Math.floor(index / gridSize);
         const col = index % gridSize;
         const x = padding + (col * (cellSize + gap));
-        const y = padding + (row * (cellSize + gap));
+        const y = padding + headerHeight + (row * (cellSize + gap));
 
         if (cell.completed && cell.photo) {
             const img = new Image();
