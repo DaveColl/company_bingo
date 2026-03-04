@@ -14,19 +14,10 @@ const allQuestions = [
     "Spielt Fußball",
     "Ist Vegetarier/Vegan",
     "Hat Geschwister",
-    "Kann ein Lied singen",
-    "Liebt Horrorfilme",
-    "Sammelt etwas",
-    "Hat ein Tattoo",
-    "Liest gerne Bücher",
-    "Läuft Marathon",
-    "Spielt Videospiele",
-    "Kann tanzen",
-    "Backt gerne",
-    "Ist im selben Monat geboren"
+    "Kann ein Lied singen"
 ];
 
-const APP_VERSION = '1.8';
+const APP_VERSION = '1.9';
 
 function checkForUpdates() {
     const currentVersion = localStorage.getItem('appVersion');
@@ -233,9 +224,9 @@ function createFinalImage() {
         return;
     }
 
-    if (completedCount < 25) {
+    if (completedCount < 16) {
         const confirmed = confirm(
-            `Du hast ${completedCount} von 25 Feldern ausgefüllt.\n\n` +
+            `Du hast ${completedCount} von 16 Feldern ausgefüllt.\n\n` +
             'Möchtest du das Bingo trotzdem fertigstellen?\n\n' +
             'Nicht ausgefüllte Felder werden leer angezeigt.'
         );
@@ -249,7 +240,7 @@ function createFinalImage() {
     const finalCanvas = document.getElementById('finalCanvas');
     const ctx = finalCanvas.getContext('2d');
 
-    const gridSize = 5;
+    const gridSize = 4;
     const cellSize = 400;
     const gap = 10;
     const padding = 20;
@@ -267,7 +258,6 @@ function createFinalImage() {
     const checkComplete = () => {
         processedCount++;
         if (processedCount === totalCells) {
-            // Directly trigger download
             const link = document.createElement('a');
             const timestamp = new Date().toISOString().slice(0, 10);
             link.download = `kollegen-bingo-${timestamp}.jpg`;
