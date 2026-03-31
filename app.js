@@ -213,13 +213,13 @@ function renderBingoGrid() {
 // ── Event Listeners ──────────────────────────────────────────
 
 function setupEventListeners() {
-    document.querySelector('.close').addEventListener('click', closeCamera);
-    document.getElementById('captureBtn').addEventListener('click', capturePhoto);
-    document.getElementById('switchCameraBtn').addEventListener('click', switchCamera);
-    document.getElementById('finalizeBtn').addEventListener('click', createFinalImage);
-    document.getElementById('resetBtn').addEventListener('click', resetBingo);
-    document.getElementById('customDialogConfirm').addEventListener('click', () => closeDialog(true));
-    document.getElementById('customDialogCancel').addEventListener('click', () => closeDialog(false));
+    document.querySelector('.close')?.addEventListener('click', closeCamera);
+    document.getElementById('captureBtn')?.addEventListener('click', capturePhoto);
+    document.getElementById('switchCameraBtn')?.addEventListener('click', switchCamera);
+    document.getElementById('finalizeBtn')?.addEventListener('click', createFinalImage);
+    document.getElementById('resetBtn')?.addEventListener('click', resetBingo);
+    document.getElementById('customDialogConfirm')?.addEventListener('click', () => closeDialog(true));
+    document.getElementById('customDialogCancel')?.addEventListener('click', () => closeDialog(false));
 }
 
 // ── Camera ───────────────────────────────────────────────────
