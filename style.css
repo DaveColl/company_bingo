@@ -22,7 +22,7 @@ body {
     margin: 0 auto;
 }
 
-/* ── Header ─────────────────────────────────────────────── */
+/* ── Header ──────────────────────────────────────────────── */
 .app-header {
     display: flex;
     flex-direction: column;
@@ -35,9 +35,6 @@ body {
     height: 52px;
     width: auto;
     object-fit: contain;
-    /* The white logo JPG has a dark navy background – blend it away */
-    mix-blend-mode: screen;
-    filter: brightness(1.1);
 }
 
 .subtitle {
@@ -198,7 +195,7 @@ body {
     transform: scale(0.98);
 }
 
-/* ── Modal ───────────────────────────────────────────────── */
+/* ── Camera Modal ────────────────────────────────────────── */
 .modal {
     display: none;
     position: fixed;
@@ -207,18 +204,20 @@ body {
     top: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.9);
+    background-color: rgba(0, 0, 0, 0.85);
     overflow: auto;
 }
 
 .modal-content {
-    background-color: #fefefe;
+    background: linear-gradient(160deg, #0B1464 0%, #1a2580 100%);
+    border: 1px solid rgba(255, 255, 255, 0.2);
     margin: 5% auto;
     padding: 20px;
-    border-radius: 10px;
+    border-radius: 16px;
     width: 90%;
     max-width: 500px;
     position: relative;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
 }
 
 .camera-modal {
@@ -226,23 +225,26 @@ body {
 }
 
 .close {
-    color: #aaa;
+    color: rgba(255, 255, 255, 0.6);
     float: right;
     font-size: 28px;
     font-weight: bold;
     cursor: pointer;
     line-height: 20px;
+    transition: color 0.2s;
 }
 
 .close:hover {
-    color: #000;
+    color: #ffffff;
 }
 
 #modalQuestion {
     text-align: center;
-    color: #0B1464;
+    color: #ffffff;
     margin-bottom: 15px;
     margin-top: 10px;
+    font-size: 1.1em;
+    line-height: 1.4;
 }
 
 .video-container {
@@ -253,7 +255,7 @@ body {
 
 #video {
     width: 100%;
-    border-radius: 8px;
+    border-radius: 10px;
     background: #000;
     display: block;
 }
@@ -265,8 +267,8 @@ body {
     width: 50px;
     height: 50px;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.9);
-    border: 2px solid #0B1464;
+    background: rgba(255, 255, 255, 0.15);
+    border: 2px solid rgba(255, 255, 255, 0.5);
     font-size: 24px;
     cursor: pointer;
     display: flex;
@@ -294,16 +296,106 @@ body {
     width: 100%;
     padding: 15px;
     font-size: 1.2em;
-    background: #0B1464;
+    background: rgba(255, 255, 255, 0.15);
     color: white;
-    border: none;
-    border-radius: 8px;
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    border-radius: 10px;
     cursor: pointer;
     font-weight: bold;
+    transition: background 0.2s, transform 0.15s;
 }
 
 .capture-btn:active {
     transform: scale(0.98);
+    background: rgba(255, 255, 255, 0.25);
+}
+
+/* ── Custom Dialog ───────────────────────────────────────── */
+.custom-dialog-overlay {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+}
+
+.custom-dialog-overlay.active {
+    display: flex;
+}
+
+.custom-dialog {
+    background: linear-gradient(160deg, #0B1464 0%, #1a2580 100%);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    padding: 32px 28px 24px;
+    max-width: 360px;
+    width: 90%;
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.6);
+    text-align: center;
+    animation: dialogIn 0.2s ease;
+}
+
+@keyframes dialogIn {
+    from { transform: scale(0.9); opacity: 0; }
+    to   { transform: scale(1);   opacity: 1; }
+}
+
+.custom-dialog-icon {
+    font-size: 2.4em;
+    margin-bottom: 12px;
+    line-height: 1;
+}
+
+.custom-dialog-message {
+    color: rgba(255, 255, 255, 0.92);
+    font-size: 0.95em;
+    line-height: 1.65;
+    margin-bottom: 24px;
+    white-space: pre-line;
+}
+
+.custom-dialog-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.dialog-btn {
+    padding: 11px 28px;
+    border-radius: 10px;
+    border: none;
+    font-size: 0.95em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.15s, opacity 0.15s;
+    min-width: 100px;
+}
+
+.dialog-btn:active {
+    transform: scale(0.97);
+}
+
+.dialog-btn-confirm {
+    background: #ffffff;
+    color: #0B1464;
+}
+
+.dialog-btn-confirm:hover {
+    opacity: 0.9;
+}
+
+.dialog-btn-cancel {
+    background: rgba(255, 255, 255, 0.12);
+    color: rgba(255, 255, 255, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.dialog-btn-cancel:hover {
+    background: rgba(255, 255, 255, 0.2);
 }
 
 /* ── Responsive ──────────────────────────────────────────── */
