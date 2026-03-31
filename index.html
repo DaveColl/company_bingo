@@ -6,17 +6,19 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <meta name="theme-color" content="#2563b8">
+    <meta name="theme-color" content="#0B1464">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <title>Kollegen Bingo</title>
+    <title>Aareon Kollegen Bingo</title>
     <link rel="manifest" href="manifest.json">
-    <link rel="stylesheet" href="style.css?v=2.1">
+    <link rel="stylesheet" href="style.css?v=3.0">
 </head>
 <body>
     <div class="container">
-        <h1>🎉 Kollegen Bingo 🎉</h1>
-        <p class="subtitle">Finde Kollegen für jede Frage und mache ein Foto!</p>
+        <div class="app-header">
+            <img src="aareon_logo_white.jpg" alt="Aareon" class="aareon-logo" />
+            <p class="subtitle">Kollegen Bingo – Finde Kollegen für jede Frage und mache ein Foto!</p>
+        </div>
 
         <input type="text" id="groupNameInput" class="group-name-input"
             placeholder="Gruppenname eingeben..."
@@ -26,7 +28,7 @@
 
         <div class="button-container">
             <button id="finalizeBtn" class="finalize-btn">
-                🎊 Bingo Fertigstellen & Bild Erstellen 🎊
+                🎊 Bingo Fertigstellen &amp; Bild Erstellen 🎊
             </button>
             <button id="resetBtn" class="reset-btn">
                 🔄 Neu Starten
@@ -51,6 +53,6 @@
     <!-- Hidden canvas for final image rendering -->
     <canvas id="finalCanvas" style="display:none;"></canvas>
 
-    <script src="app.js?v=2.0"></script>
+    <script src="app.js?v=3.0"></script>
 </body>
 </html>
