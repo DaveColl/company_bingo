@@ -14,6 +14,9 @@ body {
   position: relative;
 }
 
+/* ── Sharp Aareon blob background ───────────────────────── */
+/* Hard colour stop at 42% (same percentage twice) = zero    */
+/* feathering, pixel-sharp edge — matches the canvas blobs.  */
 body::before {
   content: '';
   position: fixed;
@@ -23,14 +26,12 @@ body::before {
     radial-gradient(circle 80vmax at -10% 110%,
       #1636c8 0%,
       #1636c8 42%,
-      #07104a 49%,
-      transparent 52%
+      #07104a 42%
     ),
     radial-gradient(circle 72vmax at 110% -10%,
       #1636c8 0%,
       #1636c8 42%,
-      #07104a 49%,
-      transparent 52%
+      #07104a 42%
     ),
     #07104a;
 }
@@ -264,10 +265,6 @@ body::before {
 }
 
 /* ── Video container: square crop preview ────────────────── */
-/* aspect-ratio:1 + overflow:hidden gives a square viewport.  */
-/* The video fills it with object-fit:cover, which is the     */
-/* same centre-crop behaviour as capturePhoto() in app.js.    */
-
 .video-container {
   position: relative;
   width: 100%;
@@ -284,7 +281,7 @@ body::before {
   display: block;
   background: #000;
   border-radius: 10px;
-  object-fit: cover;   /* centres + crops to square — matches JS capture crop */
+  object-fit: cover;
   object-position: center;
 }
 
