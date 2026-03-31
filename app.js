@@ -17,7 +17,7 @@ const allQuestions = [
   "Kann ein Lied singen"
 ];
 
-const APP_VERSION = '3.5';
+const APP_VERSION = '3.6';
 
 // ── Custom Dialog ────────────────────────────────────────────
 
@@ -121,30 +121,21 @@ function drawRoundedRect(ctx, x, y, w, h, r) {
 }
 
 // ── Aareon background ────────────────────────────────────────
-// Two hard-edged (NO gradient, NO blur) filled circles replicating the
-// Aareon brand background: bright blue blobs on dark navy.
-//
-// CSS reference:
-//   radial-gradient(circle 80vmax at -10% 110%, #1636c8 0..42%, #07104a 49%)
-//   radial-gradient(circle 72vmax at 110% -10%, #1636c8 0..42%, #07104a 49%)
-//
-// The solid colour ends at 42% of the gradient radius → we use that as the
-// circle radius so the edge is pixel-sharp with zero feathering.
+// Two hard-edged (zero blur) filled circles: bright blue on dark navy.
 
 function drawAareonBackground(ctx, w, h) {
   var M = Math.max(w, h);
 
-  // Base dark navy
   ctx.fillStyle = '#07104a';
   ctx.fillRect(0, 0, w, h);
 
-  // Bottom-left blob  (80vmax × 42% = 33.6% of M)
+  // Bottom-left blob
   ctx.beginPath();
   ctx.arc(-0.10 * w, 1.10 * h, 0.336 * M, 0, Math.PI * 2);
   ctx.fillStyle = '#1636c8';
   ctx.fill();
 
-  // Top-right blob  (72vmax × 42% = 30.24% of M)
+  // Top-right blob
   ctx.beginPath();
   ctx.arc(1.10 * w, -0.10 * h, 0.3024 * M, 0, Math.PI * 2);
   ctx.fillStyle = '#1636c8';
@@ -318,9 +309,6 @@ function closeCamera() {
 }
 
 // ── Capture: crop to centred square ──────────────────────────
-// The video preview uses object-fit:cover in a 1:1 container, which
-// visually centres and crops the frame to a square. We replicate that
-// exact crop here so the saved photo matches the preview pixel-for-pixel.
 
 function capturePhoto() {
   var video   = document.getElementById('video');
@@ -334,7 +322,6 @@ function capturePhoto() {
     return;
   }
 
-  // Centre-crop to square — identical to CSS object-fit:cover in a 1:1 box
   var size = Math.min(vw, vh);
   var sx   = (vw - size) / 2;
   var sy   = (vh - size) / 2;
@@ -387,8 +374,6 @@ function drawFinalHeader(ctx, logoImg, groupName, totalWidth, headerHeight) {
     ctx.font = 'bold 52px Arial';
     ctx.fillText('Aareon', totalWidth / 2, logoAreaH / 2);
   }
-
-  // No divider line between logo and group name pill
 
   if (!hasName) return;
 
@@ -452,7 +437,6 @@ async function createFinalImage() {
   finalCanvas.width  = totalW;
   finalCanvas.height = totalH;
 
-  // Sharp Aareon blob background
   drawAareonBackground(ctx, totalW, totalH);
 
   var logoImg = await loadImage('aareon_logo_white.png');
@@ -487,12 +471,20 @@ async function createFinalImage() {
         img.onerror = function() { resolve(); };
         img.src = cell.photo;
       } else {
-        ctx.fillStyle   = '#f0f2ff';
+        // ── Empty cell: dark navy gradient matching the app's bingo cell style ──
+        // Diagonal gradient from #0B1464 → #1a2580, white text, subtle white border.
+        // Avoids the eye-burning white of a blank cell against the dark background.
+        var grad = ctx.createLinearGradient(x, y, x + cellSize, y + cellSize);
+        grad.addColorStop(0, '#0B1464');
+        grad.addColorStop(1, '#1a2580');
+        ctx.fillStyle = grad;
         ctx.fillRect(x, y, cellSize, cellSize);
-        ctx.strokeStyle = '#0B1464';
+
+        ctx.strokeStyle = 'rgba(255,255,255,0.35)';
         ctx.lineWidth   = 3;
         ctx.strokeRect(x, y, cellSize, cellSize);
-        ctx.fillStyle    = '#0B1464';
+
+        ctx.fillStyle    = '#ffffff';
         ctx.textAlign    = 'center';
         ctx.textBaseline = 'middle';
         var fs = getOptimalFontSize(ctx, cell.question, cellSize - 50, 34);
