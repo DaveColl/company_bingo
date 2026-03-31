@@ -1,69 +1,70 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
-    <meta name="theme-color" content="#0B1464">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <title>Aareon Kollegen Bingo</title>
-    <link rel="manifest" href="manifest.json">
-    <link rel="stylesheet" href="style.css?v=3.2">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<meta name="theme-color" content="#0B1464">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>Aareon Kollegen Bingo</title>
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="style.css?v=3.3">
 </head>
 <body>
-    <div class="container">
-        <div class="app-header">
-            <img src="aareon_logo_white.png" alt="Aareon" class="aareon-logo" />
-            <p class="subtitle">Kollegen Bingo – Finde Kollegen für jede Frage und mache ein Foto!</p>
-        </div>
+<div class="container">
+  <div class="app-header">
+    <img src="aareon_logo_white.png" alt="Aareon" class="aareon-logo" />
+    <p class="subtitle">Kollegen Bingo – Finde Kollegen für jede Frage und mache ein Foto!</p>
+  </div>
 
-        <input type="text" id="groupNameInput" class="group-name-input"
-            placeholder="Gruppenname eingeben..."
-            oninput="saveGroupName(this.value)" />
+  <input type="text" id="groupNameInput" class="group-name-input"
+    placeholder="Gruppenname eingeben..."
+    oninput="saveGroupName(this.value)" />
 
-        <div class="bingo-grid" id="bingoGrid"></div>
+  <div class="bingo-grid" id="bingoGrid"></div>
 
-        <div class="button-container">
-            <button id="finalizeBtn" class="finalize-btn">
-                🎊 Bingo Fertigstellen 🎊
-            </button>
-            <button id="resetBtn" class="reset-btn">
-                🔄 Neu Starten
-            </button>
-        </div>
+  <div class="button-container">
+    <button id="finalizeBtn" class="finalize-btn">
+      🎊 Bingo Fertigstellen 🎊
+    </button>
+    <button id="resetBtn" class="reset-btn">
+      🔄 Neu Starten
+    </button>
+  </div>
+</div>
+
+<!-- Camera Modal -->
+<div id="cameraModal" class="modal">
+  <div class="modal-content camera-modal">
+    <span class="close">&times;</span>
+    <h2 id="modalQuestion"></h2>
+    <div class="video-container">
+      <!-- muted is required on iOS Safari for autoplay; playsinline keeps it inline -->
+      <video id="video" autoplay playsinline muted></video>
+      <button id="switchCameraBtn" class="switch-camera-btn" title="Kamera wechseln">🔄</button>
     </div>
+    <canvas id="canvas" style="display:none;"></canvas>
+    <button id="captureBtn" class="capture-btn">📸 Foto Machen</button>
+  </div>
+</div>
 
-    <!-- Camera Modal -->
-    <div id="cameraModal" class="modal">
-        <div class="modal-content camera-modal">
-            <span class="close">&times;</span>
-            <h2 id="modalQuestion"></h2>
-            <div class="video-container">
-                <video id="video" autoplay playsinline></video>
-                <button id="switchCameraBtn" class="switch-camera-btn" title="Kamera wechseln">🔄</button>
-            </div>
-            <canvas id="canvas" style="display:none;"></canvas>
-            <button id="captureBtn" class="capture-btn">📸 Foto Machen</button>
-        </div>
+<!-- Custom Dialog -->
+<div id="customDialog" class="custom-dialog-overlay">
+  <div class="custom-dialog">
+    <div id="customDialogIcon" class="custom-dialog-icon"></div>
+    <p id="customDialogMessage" class="custom-dialog-message"></p>
+    <div class="custom-dialog-buttons">
+      <button id="customDialogCancel" class="dialog-btn dialog-btn-cancel">Abbrechen</button>
+      <button id="customDialogConfirm" class="dialog-btn dialog-btn-confirm">OK</button>
     </div>
+  </div>
+</div>
 
-    <!-- Custom Dialog -->
-    <div id="customDialog" class="custom-dialog-overlay">
-        <div class="custom-dialog">
-            <div id="customDialogIcon" class="custom-dialog-icon"></div>
-            <p id="customDialogMessage" class="custom-dialog-message"></p>
-            <div class="custom-dialog-buttons">
-                <button id="customDialogCancel" class="dialog-btn dialog-btn-cancel">Abbrechen</button>
-                <button id="customDialogConfirm" class="dialog-btn dialog-btn-confirm">OK</button>
-            </div>
-        </div>
-    </div>
+<canvas id="finalCanvas" style="display:none;"></canvas>
 
-    <canvas id="finalCanvas" style="display:none;"></canvas>
-
-    <script src="app.js?v=3.2"></script>
+<script src="app.js?v=3.3"></script>
 </body>
 </html>
