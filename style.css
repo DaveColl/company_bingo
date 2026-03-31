@@ -4,22 +4,34 @@
     box-sizing: border-box;
 }
 
+/* ── Background: fixed pseudo-element works on iOS/Android ── */
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background-color: #0B1464;
-    background-image: url('img0_1024x768_NEU.jpg');
-    background-size: cover;
-    background-attachment: fixed;
-    background-position: center;
     min-height: 100vh;
     padding: 20px;
     color: #333;
     touch-action: pan-x pan-y pinch-zoom;
+    position: relative;
+}
+
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url('img0_1024x768_NEU.jpg');
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+    opacity: 0.85;
+    z-index: -1;
 }
 
 .container {
     max-width: 600px;
     margin: 0 auto;
+    position: relative;
+    z-index: 1;
 }
 
 /* ── Header ──────────────────────────────────────────────── */
@@ -51,12 +63,10 @@ body {
     grid-template-columns: repeat(4, 1fr);
     gap: 8px;
     margin-bottom: 20px;
-    background: rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.1);
     padding: 10px;
     border-radius: 12px;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
 }
 
 .bingo-cell {
@@ -319,8 +329,6 @@ body {
     background: rgba(0, 0, 0, 0.7);
     align-items: center;
     justify-content: center;
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
 }
 
 .custom-dialog-overlay.active {
@@ -384,37 +392,17 @@ body {
     color: #0B1464;
 }
 
-.dialog-btn-confirm:hover {
-    opacity: 0.9;
-}
-
 .dialog-btn-cancel {
     background: rgba(255, 255, 255, 0.12);
     color: rgba(255, 255, 255, 0.85);
     border: 1px solid rgba(255, 255, 255, 0.25);
 }
 
-.dialog-btn-cancel:hover {
-    background: rgba(255, 255, 255, 0.2);
-}
-
 /* ── Responsive ──────────────────────────────────────────── */
 @media (max-width: 480px) {
     .aareon-logo { height: 40px; }
-
     .bingo-cell { padding: 3px; }
-
-    .bingo-cell .text {
-        font-size: clamp(0.45em, 0.65em, 2vw);
-    }
-
-    .bingo-cell.completed .text {
-        font-size: clamp(0.4em, 0.6em, 1.8vw);
-    }
-
-    .switch-camera-btn {
-        width: 45px;
-        height: 45px;
-        font-size: 20px;
-    }
+    .bingo-cell .text { font-size: clamp(0.45em, 0.65em, 2vw); }
+    .bingo-cell.completed .text { font-size: clamp(0.4em, 0.6em, 1.8vw); }
+    .switch-camera-btn { width: 45px; height: 45px; font-size: 20px; }
 }
