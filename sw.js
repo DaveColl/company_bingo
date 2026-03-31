@@ -1,10 +1,12 @@
-const CACHE_NAME = 'kollegen-bingo-v9';
+const CACHE_NAME = 'aareon-bingo-v1';
 const urlsToCache = [
   './',
   './index.html',
   './style.css',
   './app.js',
-  './manifest.json'
+  './manifest.json',
+  './aareon_logo_white.jpg',
+  './img0_1024x768_NEU.jpg'
 ];
 
 self.addEventListener('install', event => {
