@@ -372,4 +372,109 @@ async function createFinalImage() {
     var gap         = 10;
     var padding     = 20;
     var headerH     = hasName ? 175 : 110;
-    var totalW      = (cellSize * gridSize) + (gap * (gridSize -
+    var totalW      = (cellSize * gridSize) + (gap * (gridSize - 1)) + (padding * 2);
+    var totalH      = totalW + headerH;
+
+    finalCanvas.width  = totalW;
+    finalCanvas.height = totalH;
+
+    ctx.fillStyle = '#0B1464';
+    ctx.fillRect(0, 0, totalW, totalH);
+
+    var logoImg = await loadImage('aareon_logo_white.png');
+    drawFinalHeader(ctx, logoImg, groupName, totalW, headerH);
+
+    await Promise.all(bingoData.map(function(cell, index) {
+        return new Promise(function(resolve) {
+            var row = Math.floor(index / gridSize);
+            var col = index % gridSize;
+            var x   = padding + (col * (cellSize + gap));
+            var y   = padding + headerH + (row * (cellSize + gap));
+
+            if (cell.completed && cell.photo) {
+                var img = new Image();
+                img.onload = function() {
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillRect(x, y, cellSize, cellSize);
+                    drawImageCover(ctx, img, x, y, cellSize, cellSize);
+
+                    var th = 55;
+                    ctx.fillStyle = 'rgba(0,0,0,0.75)';
+                    ctx.fillRect(x, y, cellSize, th);
+
+                    ctx.fillStyle = '#ffffff';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    var fs = getOptimalFontSize(ctx, cell.question, cellSize - 30, 26);
+                    ctx.font = 'bold ' + fs + 'px Arial';
+                    ctx.fillText(cell.question, x + cellSize / 2, y + th / 2);
+                    resolve();
+                };
+                img.onerror = function() { resolve(); };
+                img.src = cell.photo;
+            } else {
+                ctx.fillStyle = '#f0f2ff';
+                ctx.fillRect(x, y, cellSize, cellSize);
+                ctx.strokeStyle = '#0B1464';
+                ctx.lineWidth = 3;
+                ctx.strokeRect(x, y, cellSize, cellSize);
+                ctx.fillStyle = '#0B1464';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                var fs = getOptimalFontSize(ctx, cell.question, cellSize - 50, 34);
+                ctx.font = 'bold ' + fs + 'px Arial';
+                ctx.fillText(cell.question, x + cellSize / 2, y + cellSize / 2);
+                resolve();
+            }
+        });
+    }));
+
+    var link      = document.createElement('a');
+    var timestamp = new Date().toISOString().slice(0, 10);
+    var safeName  = groupName.trim().replace(/[^a-z0-9]/gi, '-') || 'bingo';
+    link.download = 'aareon-kollegen-bingo-' + safeName + '-' + timestamp + '.jpg';
+    link.href     = finalCanvas.toDataURL('image/jpeg', 0.9);
+    link.click();
+
+    btn.textContent = '🎊 Bingo Fertigstellen 🎊';
+    btn.disabled = false;
+}
+
+// ── Reset ─────────────────────────────────────────────────────
+
+async function resetBingo() {
+    var ok = await showConfirm(
+        'Möchtest du wirklich alle Daten löschen und neu starten?\n\nDie Fragen werden neu gemischt!',
+        '🔄'
+    );
+    if (ok) {
+        localStorage.removeItem('bingoData');
+        bingoData = [];
+        loadBingoData();
+        loadGroupName();
+        renderBingoGrid();
+    }
+}
+
+// ── Boot ──────────────────────────────────────────────────────
+
+function boot() {
+    var stored = localStorage.getItem('appVersion');
+    if (stored !== APP_VERSION) {
+        localStorage.setItem('appVersion', APP_VERSION);
+    }
+    loadBingoData();
+    loadGroupName();
+    renderBingoGrid();
+    setupEventListeners();
+}
+
+// ── Service Worker ────────────────────────────────────────────
+
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js')
+        .then(function() { console.log('SW registered'); })
+        .catch(function(e) { console.log('SW failed:', e); });
+}
+
+boot();
