@@ -17,7 +17,7 @@ const allQuestions = [
   "Kann ein Lied singen"
 ];
 
-const APP_VERSION = '3.3';
+const APP_VERSION = '3.4';
 
 // ── Custom Dialog ────────────────────────────────────────────
 
@@ -120,6 +120,46 @@ function drawRoundedRect(ctx, x, y, w, h, r) {
   ctx.closePath();
 }
 
+// ── Aareon background (matches the CSS radial-gradient blobs) ─────────────
+// Two sharp-edged circular blobs: bright blue on dark navy.
+// Replicates:  radial-gradient(circle 80vmax at -10% 110%, #1636c8 0-42%, #07104a 49%)
+//              radial-gradient(circle 72vmax at 110% -10%, #1636c8 0-42%, #07104a 49%)
+
+function drawAareonBackground(ctx, w, h) {
+  var M = Math.max(w, h);
+
+  // Base dark navy
+  ctx.fillStyle = '#07104a';
+  ctx.fillRect(0, 0, w, h);
+
+  function drawBlob(cx, cy, innerR, outerR) {
+    // Solid core
+    ctx.beginPath();
+    ctx.arc(cx, cy, innerR, 0, Math.PI * 2);
+    ctx.fillStyle = '#1636c8';
+    ctx.fill();
+
+    // Narrow soft edge (42% → 49% of the CSS gradient = ~7% of radius)
+    var grad = ctx.createRadialGradient(cx, cy, innerR, cx, cy, outerR);
+    grad.addColorStop(0, '#1636c8');
+    grad.addColorStop(1, 'rgba(7,16,74,0)');
+    ctx.beginPath();
+    ctx.arc(cx, cy, outerR, 0, Math.PI * 2);
+    ctx.fillStyle = grad;
+    ctx.fill();
+  }
+
+  // Bottom-left:  80vmax circle, centre at (-10%, 110%)
+  //   inner = 80% * 42% * M = 0.336 M
+  //   outer = 80% * 52% * M = 0.416 M  (matches transparent stop)
+  drawBlob(-0.10 * w,  1.10 * h,  0.336 * M,  0.416 * M);
+
+  // Top-right:  72vmax circle, centre at (110%, -10%)
+  //   inner = 72% * 42% * M = 0.302 M
+  //   outer = 72% * 52% * M = 0.374 M
+  drawBlob( 1.10 * w, -0.10 * h,  0.302 * M,  0.374 * M);
+}
+
 // ── Data ─────────────────────────────────────────────────────
 
 var bingoData = [];
@@ -203,9 +243,6 @@ function setupEventListeners() {
 }
 
 // ── Camera ───────────────────────────────────────────────────
-// FIX: use { ideal } constraints (not exact) so iOS/Android don't reject them.
-// FIX: call video.play() explicitly after assigning srcObject.
-// FIX: wait for 'loadedmetadata' before allowing capture so dimensions are known.
 
 var videoReady = false;
 
@@ -219,7 +256,6 @@ async function startCamera(facingMode) {
       videoStream = null;
     }
 
-    // Use { ideal } – works on iOS, Android, and desktop
     var constraints = {
       audio: false,
       video: {
@@ -231,7 +267,6 @@ async function startCamera(facingMode) {
 
     videoStream = await navigator.mediaDevices.getUserMedia(constraints);
   } catch(err) {
-    // Fallback: any camera
     try {
       videoStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
     } catch(e) {
@@ -240,14 +275,11 @@ async function startCamera(facingMode) {
     }
   }
 
-  // Assign stream and play
   video.srcObject = videoStream;
   currentFacingMode = facingMode;
 
-  // Explicitly call play() – required on some mobile browsers
   try { await video.play(); } catch(e) { /* autoplay may already handle it */ }
 
-  // Wait until the video has real dimensions (avoids black-screen capture)
   await new Promise(function(resolve) {
     if (video.readyState >= 2 && video.videoWidth > 0) {
       videoReady = true;
@@ -258,7 +290,6 @@ async function startCamera(facingMode) {
         videoReady = true;
         resolve();
       }, { once: true });
-      // Safety timeout: resolve after 3 s regardless
       setTimeout(function() { videoReady = true; resolve(); }, 3000);
     }
   });
@@ -300,7 +331,6 @@ function capturePhoto() {
   var canvas  = document.getElementById('canvas');
   var context = canvas.getContext('2d');
 
-  // Guard: if video not ready or has no frame, warn and bail
   var w = video.videoWidth;
   var h = video.videoHeight;
   if (!videoReady || w === 0 || h === 0) {
@@ -322,9 +352,6 @@ function capturePhoto() {
 }
 
 // ── Final Image ──────────────────────────────────────────────
-// FIX: use globalCompositeOperation = 'screen' when drawing the logo so its
-//      solid black background becomes invisible (black screens out to show
-//      whatever is underneath) while the white logo stays white.
 
 function drawFinalHeader(ctx, logoImg, groupName, totalWidth, headerHeight) {
   var hasName   = groupName.trim().length > 0;
@@ -337,9 +364,6 @@ function drawFinalHeader(ctx, logoImg, groupName, totalWidth, headerHeight) {
     var lW = logoImg.width * (lH / logoImg.height);
     if (lW > logoMaxW) { lW = logoMaxW; lH = logoImg.height * (lW / logoImg.width); }
 
-    // Strip the solid black background from the logo PNG by drawing it to an
-    // offscreen canvas, reading the pixel data, and setting any dark pixel
-    // (luminance < 80) to fully transparent before drawing onto the main canvas.
     var offW = Math.round(lW);
     var offH = Math.round(lH);
     var off  = document.createElement('canvas');
@@ -350,11 +374,8 @@ function drawFinalHeader(ctx, logoImg, groupName, totalWidth, headerHeight) {
     var idata = offCtx.getImageData(0, 0, offW, offH);
     var d = idata.data;
     for (var p = 0; p < d.length; p += 4) {
-      // luminance approximation
       var lum = 0.299 * d[p] + 0.587 * d[p+1] + 0.114 * d[p+2];
-      if (lum < 80) {
-        d[p+3] = 0; // make dark pixels transparent
-      }
+      if (lum < 80) { d[p+3] = 0; }
     }
     offCtx.putImageData(idata, 0, 0);
     ctx.drawImage(off, (totalWidth - offW) / 2, (logoAreaH - offH) / 2, offW, offH);
@@ -366,15 +387,10 @@ function drawFinalHeader(ctx, logoImg, groupName, totalWidth, headerHeight) {
     ctx.fillText('Aareon', totalWidth / 2, logoAreaH / 2);
   }
 
-  if (!hasName) return;
+  // ── NO DIVIDER LINE ──────────────────────────────────────────
+  // (removed: the white stroke between logo area and group name pill)
 
-  // Divider
-  ctx.strokeStyle = 'rgba(255,255,255,0.22)';
-  ctx.lineWidth   = 1;
-  ctx.beginPath();
-  ctx.moveTo(totalWidth * 0.12, logoAreaH);
-  ctx.lineTo(totalWidth * 0.88, logoAreaH);
-  ctx.stroke();
+  if (!hasName) return;
 
   // Group name pill
   var nameAreaH = headerHeight - logoAreaH;
@@ -437,8 +453,8 @@ async function createFinalImage() {
   finalCanvas.width  = totalW;
   finalCanvas.height = totalH;
 
-  ctx.fillStyle = '#0B1464';
-  ctx.fillRect(0, 0, totalW, totalH);
+  // ── Aareon sharp-blob background (matches the CSS design) ──
+  drawAareonBackground(ctx, totalW, totalH);
 
   var logoImg = await loadImage('aareon_logo_white.png');
   drawFinalHeader(ctx, logoImg, groupName, totalW, headerH);
