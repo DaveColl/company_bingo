@@ -273,7 +273,7 @@ function createFinalImage() {
 
     // ── Aareon logo (white version) in header ────────────────
     const logoImg = new Image();
-    logoImg.src = 'aareon_logo_white.jpg';
+    logoImg.src = 'aareon_logo_white.png';
     logoImg.onload = () => {
         // Draw logo centred in the logo row; max height = 56px
         const logoDrawH = 56;
