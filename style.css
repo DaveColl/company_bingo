@@ -1,408 +1,411 @@
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-/* ── Background: fixed pseudo-element works on iOS/Android ── */
+/* ── Background: pure CSS blobs – no image file needed, scales perfectly ── */
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #0B1464;
-    min-height: 100vh;
-    padding: 20px;
-    color: #333;
-    touch-action: pan-x pan-y pinch-zoom;
-    position: relative;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #07104a;
+  min-height: 100vh;
+  padding: 20px;
+  color: #333;
+  touch-action: pan-x pan-y pinch-zoom;
+  position: relative;
 }
 
 body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image: url('img0_1024x768_NEU.jpg');
-    background-size: cover;
-    background-position: center center;
-    background-repeat: no-repeat;
-    opacity: 0.85;
-    z-index: -1;
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  /* Two large rounded blobs: one bottom-left, one top-right, on a dark navy base.
+     Matches the original background image exactly, but scales to any screen. */
+  background:
+    radial-gradient(ellipse 90% 75% at -18% 108%, #1a3bbf 0%, #0f2090 38%, transparent 66%),
+    radial-gradient(ellipse 80% 72% at 118%  -8%, #1a3bbf 0%, #0f2090 38%, transparent 66%),
+    #07104a;
 }
 
 .container {
-    max-width: 600px;
-    margin: 0 auto;
-    position: relative;
-    z-index: 1;
+  max-width: 600px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
 }
 
 /* ── Header ──────────────────────────────────────────────── */
 .app-header {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-bottom: 20px;
-    gap: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 20px;
+  gap: 10px;
 }
 
 .aareon-logo {
-    height: 52px;
-    width: auto;
-    object-fit: contain;
+  height: 52px;
+  width: auto;
+  object-fit: contain;
 }
 
 .subtitle {
-    text-align: center;
-    color: rgba(255, 255, 255, 0.9);
-    font-size: 0.88em;
-    line-height: 1.4;
-    max-width: 440px;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.88em;
+  line-height: 1.4;
+  max-width: 440px;
 }
 
 /* ── Grid ────────────────────────────────────────────────── */
 .bingo-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 8px;
-    margin-bottom: 20px;
-    background: rgba(255, 255, 255, 0.1);
-    padding: 10px;
-    border-radius: 12px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-bottom: 20px;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 10px;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
 }
 
 .bingo-cell {
-    aspect-ratio: 1;
-    background: linear-gradient(135deg, #0B1464 0%, #1a2580 100%);
-    border: 2px solid rgba(255, 255, 255, 0.35);
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    padding: 5px;
-    color: white;
-    cursor: pointer;
-    transition: transform 0.2s, box-shadow 0.2s;
-    position: relative;
-    overflow: hidden;
+  aspect-ratio: 1;
+  background: linear-gradient(135deg, #0B1464 0%, #1a2580 100%);
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 5px;
+  color: white;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  position: relative;
+  overflow: hidden;
 }
 
 .bingo-cell:active {
-    transform: scale(0.95);
+  transform: scale(0.95);
 }
 
 .bingo-cell.completed {
-    background: #0B1464;
-    box-shadow: 0 0 15px rgba(11, 20, 100, 0.7);
-    align-items: flex-start;
-    padding-top: 4px;
+  background: #0B1464;
+  box-shadow: 0 0 15px rgba(11, 20, 100, 0.7);
+  align-items: flex-start;
+  padding-top: 4px;
 }
 
 .bingo-cell img {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: center;
-    border-radius: 6px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  border-radius: 6px;
 }
 
 .bingo-cell .text {
-    position: relative;
-    z-index: 2;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
-    padding: 4px 6px;
-    border-radius: 4px;
-    width: 100%;
-    font-weight: 600;
-    font-size: clamp(0.5em, 0.7em, 2vw);
-    line-height: 1.2;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    word-break: keep-all;
-    hyphens: none;
+  position: relative;
+  z-index: 2;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+  padding: 4px 6px;
+  border-radius: 4px;
+  width: 100%;
+  font-weight: 600;
+  font-size: clamp(0.5em, 0.7em, 2vw);
+  line-height: 1.2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  word-break: keep-all;
+  hyphens: none;
 }
 
 .bingo-cell.completed .text {
-    background: transparent;
-    font-size: clamp(0.45em, 0.65em, 1.8vw);
-    padding: 3px 4px;
-    text-shadow:
-        -1px -1px 3px rgba(0, 0, 0, 0.95),
-         1px -1px 3px rgba(0, 0, 0, 0.95),
-        -1px  1px 3px rgba(0, 0, 0, 0.95),
-         1px  1px 3px rgba(0, 0, 0, 0.95),
-         0    0   6px rgba(0, 0, 0, 0.95);
-    font-weight: 700;
-    align-items: flex-start;
+  background: transparent;
+  font-size: clamp(0.45em, 0.65em, 1.8vw);
+  padding: 3px 4px;
+  text-shadow:
+    -1px -1px 3px rgba(0, 0, 0, 0.95),
+     1px -1px 3px rgba(0, 0, 0, 0.95),
+    -1px  1px 3px rgba(0, 0, 0, 0.95),
+     1px  1px 3px rgba(0, 0, 0, 0.95),
+     0    0   6px rgba(0, 0, 0, 0.95);
+  font-weight: 700;
+  align-items: flex-start;
 }
 
 /* ── Group name input ────────────────────────────────────── */
 .group-name-input {
-    width: 100%;
-    padding: 11px 14px;
-    border: 2px solid rgba(255, 255, 255, 0.5);
-    border-radius: 8px;
-    font-size: 1em;
-    font-weight: 600;
-    background: rgba(255, 255, 255, 0.12);
-    color: white;
-    text-align: center;
-    outline: none;
-    transition: border-color 0.2s, background 0.2s;
-    margin-bottom: 14px;
+  width: 100%;
+  padding: 11px 14px;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  border-radius: 8px;
+  font-size: 1em;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.12);
+  color: white;
+  text-align: center;
+  outline: none;
+  transition: border-color 0.2s, background 0.2s;
+  margin-bottom: 14px;
 }
 .group-name-input::placeholder { color: rgba(255, 255, 255, 0.55); }
 .group-name-input:focus {
-    border-color: white;
-    background: rgba(255, 255, 255, 0.22);
+  border-color: white;
+  background: rgba(255, 255, 255, 0.22);
 }
 
 /* ── Buttons ─────────────────────────────────────────────── */
 .button-container {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .finalize-btn,
 .reset-btn {
-    width: 100%;
-    padding: 15px;
-    font-size: 1.1em;
-    font-weight: bold;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: transform 0.2s, box-shadow 0.2s;
+  width: 100%;
+  padding: 15px;
+  font-size: 1.1em;
+  font-weight: bold;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
 }
 
 .finalize-btn {
-    background: linear-gradient(135deg, #0B1464 0%, #1a2580 100%);
-    color: white;
-    border: 2px solid rgba(255, 255, 255, 0.4);
-    box-shadow: 0 4px 15px rgba(11, 20, 100, 0.5);
+  background: linear-gradient(135deg, #0B1464 0%, #1a2580 100%);
+  color: white;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 4px 15px rgba(11, 20, 100, 0.5);
 }
 
 .finalize-btn:disabled {
-    opacity: 0.7;
-    cursor: not-allowed;
+  opacity: 0.7;
+  cursor: not-allowed;
 }
 
 .finalize-btn:not(:disabled):active {
-    transform: scale(0.98);
+  transform: scale(0.98);
 }
 
 .reset-btn {
-    background: rgba(255, 255, 255, 0.15);
-    color: white;
-    border: 2px solid rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+  border: 2px solid rgba(255, 255, 255, 0.3);
 }
 
 .reset-btn:active {
-    transform: scale(0.98);
+  transform: scale(0.98);
 }
 
 /* ── Camera Modal ────────────────────────────────────────── */
 .modal {
-    display: none;
-    position: fixed;
-    z-index: 1000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.85);
-    overflow: auto;
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.85);
+  overflow: auto;
 }
 
 .modal-content {
-    background: linear-gradient(160deg, #0B1464 0%, #1a2580 100%);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    margin: 5% auto;
-    padding: 20px;
-    border-radius: 16px;
-    width: 90%;
-    max-width: 500px;
-    position: relative;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  background: linear-gradient(160deg, #0B1464 0%, #1a2580 100%);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  margin: 5% auto;
+  padding: 20px;
+  border-radius: 16px;
+  width: 90%;
+  max-width: 500px;
+  position: relative;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
 }
 
 .camera-modal {
-    max-width: 600px;
+  max-width: 600px;
 }
 
 .close {
-    color: rgba(255, 255, 255, 0.6);
-    float: right;
-    font-size: 28px;
-    font-weight: bold;
-    cursor: pointer;
-    line-height: 20px;
-    transition: color 0.2s;
+  color: rgba(255, 255, 255, 0.6);
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+  cursor: pointer;
+  line-height: 20px;
+  transition: color 0.2s;
 }
 
-.close:hover {
-    color: #ffffff;
-}
+.close:hover { color: #ffffff; }
 
 #modalQuestion {
-    text-align: center;
-    color: #ffffff;
-    margin-bottom: 15px;
-    margin-top: 10px;
-    font-size: 1.1em;
-    line-height: 1.4;
+  text-align: center;
+  color: #ffffff;
+  margin-bottom: 15px;
+  margin-top: 10px;
+  font-size: 1.1em;
+  line-height: 1.4;
 }
 
 .video-container {
-    position: relative;
-    width: 100%;
-    margin-bottom: 15px;
+  position: relative;
+  width: 100%;
+  margin-bottom: 15px;
+  /* Keeps a 4:3 area reserved so layout doesn't jump while camera loads */
+  min-height: 200px;
+  background: #000;
+  border-radius: 10px;
 }
 
 #video {
-    width: 100%;
-    border-radius: 10px;
-    background: #000;
-    display: block;
+  width: 100%;
+  border-radius: 10px;
+  background: #000;
+  display: block;
+  /* Force the element to show even before metadata loads */
+  min-height: 200px;
 }
 
 .switch-camera-btn {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.15);
-    border: 2px solid rgba(255, 255, 255, 0.5);
-    font-size: 24px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-    z-index: 10;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  font-size: 24px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  z-index: 10;
 }
 
 .switch-camera-btn:active {
-    transform: scale(0.95) rotate(180deg);
+  transform: scale(0.95) rotate(180deg);
 }
 
 .switch-camera-btn.rotating {
-    animation: rotate 0.5s ease;
+  animation: rotate 0.5s ease;
 }
 
 @keyframes rotate {
-    from { transform: rotate(0deg); }
-    to   { transform: rotate(360deg); }
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
 }
 
 .capture-btn {
-    width: 100%;
-    padding: 15px;
-    font-size: 1.2em;
-    background: rgba(255, 255, 255, 0.15);
-    color: white;
-    border: 2px solid rgba(255, 255, 255, 0.4);
-    border-radius: 10px;
-    cursor: pointer;
-    font-weight: bold;
-    transition: background 0.2s, transform 0.15s;
+  width: 100%;
+  padding: 15px;
+  font-size: 1.2em;
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background 0.2s, transform 0.15s;
 }
 
 .capture-btn:active {
-    transform: scale(0.98);
-    background: rgba(255, 255, 255, 0.25);
+  transform: scale(0.98);
+  background: rgba(255, 255, 255, 0.25);
 }
 
 /* ── Custom Dialog ───────────────────────────────────────── */
 .custom-dialog-overlay {
-    display: none;
-    position: fixed;
-    z-index: 2000;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.7);
-    align-items: center;
-    justify-content: center;
+  display: none;
+  position: fixed;
+  z-index: 2000;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  align-items: center;
+  justify-content: center;
 }
 
 .custom-dialog-overlay.active {
-    display: flex;
+  display: flex;
 }
 
 .custom-dialog {
-    background: linear-gradient(160deg, #0B1464 0%, #1a2580 100%);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 20px;
-    padding: 32px 28px 24px;
-    max-width: 360px;
-    width: 90%;
-    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.6);
-    text-align: center;
-    animation: dialogIn 0.2s ease;
+  background: linear-gradient(160deg, #0B1464 0%, #1a2580 100%);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  padding: 32px 28px 24px;
+  max-width: 360px;
+  width: 90%;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.6);
+  text-align: center;
+  animation: dialogIn 0.2s ease;
 }
 
 @keyframes dialogIn {
-    from { transform: scale(0.9); opacity: 0; }
-    to   { transform: scale(1);   opacity: 1; }
+  from { transform: scale(0.9); opacity: 0; }
+  to   { transform: scale(1);   opacity: 1; }
 }
 
 .custom-dialog-icon {
-    font-size: 2.4em;
-    margin-bottom: 12px;
-    line-height: 1;
+  font-size: 2.4em;
+  margin-bottom: 12px;
+  line-height: 1;
 }
 
 .custom-dialog-message {
-    color: rgba(255, 255, 255, 0.92);
-    font-size: 0.95em;
-    line-height: 1.65;
-    margin-bottom: 24px;
-    white-space: pre-line;
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 0.95em;
+  line-height: 1.65;
+  margin-bottom: 24px;
+  white-space: pre-line;
 }
 
 .custom-dialog-buttons {
-    display: flex;
-    gap: 10px;
-    justify-content: center;
+  display: flex;
+  gap: 10px;
+  justify-content: center;
 }
 
 .dialog-btn {
-    padding: 11px 28px;
-    border-radius: 10px;
-    border: none;
-    font-size: 0.95em;
-    font-weight: 600;
-    cursor: pointer;
-    transition: transform 0.15s, opacity 0.15s;
-    min-width: 100px;
+  padding: 11px 28px;
+  border-radius: 10px;
+  border: none;
+  font-size: 0.95em;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.15s, opacity 0.15s;
+  min-width: 100px;
 }
 
-.dialog-btn:active {
-    transform: scale(0.97);
-}
+.dialog-btn:active { transform: scale(0.97); }
 
 .dialog-btn-confirm {
-    background: #ffffff;
-    color: #0B1464;
+  background: #ffffff;
+  color: #0B1464;
 }
 
 .dialog-btn-cancel {
-    background: rgba(255, 255, 255, 0.12);
-    color: rgba(255, 255, 255, 0.85);
-    border: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.25);
 }
 
 /* ── Responsive ──────────────────────────────────────────── */
 @media (max-width: 480px) {
-    .aareon-logo { height: 40px; }
-    .bingo-cell { padding: 3px; }
-    .bingo-cell .text { font-size: clamp(0.45em, 0.65em, 2vw); }
-    .bingo-cell.completed .text { font-size: clamp(0.4em, 0.6em, 1.8vw); }
-    .switch-camera-btn { width: 45px; height: 45px; font-size: 20px; }
+  .aareon-logo { height: 40px; }
+  .bingo-cell  { padding: 3px; }
+  .bingo-cell .text          { font-size: clamp(0.45em, 0.65em, 2vw); }
+  .bingo-cell.completed .text { font-size: clamp(0.4em,  0.6em,  1.8vw); }
+  .switch-camera-btn { width: 45px; height: 45px; font-size: 20px; }
 }
