@@ -11,7 +11,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <title>Aareon Kollegen Bingo</title>
     <link rel="manifest" href="manifest.json">
-    <link rel="stylesheet" href="style.css?v=3.0">
+    <link rel="stylesheet" href="style.css?v=3.1">
 </head>
 <body>
     <div class="container">
@@ -28,7 +28,7 @@
 
         <div class="button-container">
             <button id="finalizeBtn" class="finalize-btn">
-                🎊 Bingo Fertigstellen &amp; Bild Erstellen 🎊
+                🎊 Bingo Fertigstellen 🎊
             </button>
             <button id="resetBtn" class="reset-btn">
                 🔄 Neu Starten
@@ -50,9 +50,21 @@
         </div>
     </div>
 
+    <!-- Custom Dialog -->
+    <div id="customDialog" class="custom-dialog-overlay">
+        <div class="custom-dialog">
+            <div id="customDialogIcon" class="custom-dialog-icon"></div>
+            <p id="customDialogMessage" class="custom-dialog-message"></p>
+            <div class="custom-dialog-buttons">
+                <button id="customDialogCancel" class="dialog-btn dialog-btn-cancel">Abbrechen</button>
+                <button id="customDialogConfirm" class="dialog-btn dialog-btn-confirm">OK</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Hidden canvas for final image rendering -->
     <canvas id="finalCanvas" style="display:none;"></canvas>
 
-    <script src="app.js?v=3.0"></script>
+    <script src="app.js?v=3.1"></script>
 </body>
 </html>
