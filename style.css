@@ -20,11 +20,24 @@ body::before {
   position: fixed;
   inset: 0;
   z-index: -1;
-  /* Two large rounded blobs: one bottom-left, one top-right, on a dark navy base.
-     Matches the original background image exactly, but scales to any screen. */
+  /*
+   * Two hard-edged circular blobs replicating the original background image:
+   * bottom-left and top-right, bright blue on dark navy.
+   * The ~6% transition zone gives the slight soft edge from the original.
+   */
   background:
-    radial-gradient(ellipse 90% 75% at -18% 108%, #1a3bbf 0%, #0f2090 38%, transparent 66%),
-    radial-gradient(ellipse 80% 72% at 118%  -8%, #1a3bbf 0%, #0f2090 38%, transparent 66%),
+    radial-gradient(circle 80vmax at -10% 110%,
+      #1636c8 0%,
+      #1636c8 42%,
+      #07104a 49%,
+      transparent 52%
+    ),
+    radial-gradient(circle 72vmax at 110% -10%,
+      #1636c8 0%,
+      #1636c8 42%,
+      #07104a 49%,
+      transparent 52%
+    ),
     #07104a;
 }
 
