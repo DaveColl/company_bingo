@@ -17,7 +17,7 @@ const allQuestions = [
     "Kann ein Lied singen"
 ];
 
-const APP_VERSION = '3.0'; // ← bumped to force cache/storage refresh
+const APP_VERSION = '3.1';
 
 function checkForUpdates() {
     const currentVersion = localStorage.getItem('appVersion');
@@ -38,6 +38,53 @@ let bingoData = [];
 let currentCellIndex = null;
 let videoStream = null;
 let currentFacingMode = 'environment';
+let dialogResolve = null;
+
+// ── Custom Dialog ────────────────────────────────────────────
+
+function showDialog(message, type = 'alert', icon = '') {
+    return new Promise((resolve) => {
+        dialogResolve = resolve;
+        const overlay = document.getElementById('customDialog');
+        const iconEl = document.getElementById('customDialogIcon');
+        const msgEl = document.getElementById('customDialogMessage');
+        const cancelBtn = document.getElementById('customDialogCancel');
+
+        iconEl.textContent = icon;
+        iconEl.style.display = icon ? 'block' : 'none';
+        msgEl.textContent = message;
+        cancelBtn.style.display = type === 'confirm' ? '' : 'none';
+
+        overlay.classList.add('active');
+    });
+}
+
+function showAlert(message, icon = 'ℹ️') {
+    return showDialog(message, 'alert', icon);
+}
+
+function showConfirm(message, icon = '') {
+    return showDialog(message, 'confirm', icon);
+}
+
+function closeDialog(result) {
+    document.getElementById('customDialog').classList.remove('active');
+    if (dialogResolve) {
+        dialogResolve(result);
+        dialogResolve = null;
+    }
+}
+
+// ── Helpers ──────────────────────────────────────────────────
+
+function loadImage(src) {
+    return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = () => resolve(null);
+        img.src = src;
+    });
+}
 
 function shuffleArray(array) {
     const shuffled = [...array];
@@ -47,6 +94,58 @@ function shuffleArray(array) {
     }
     return shuffled;
 }
+
+function getOptimalFontSize(ctx, text, maxWidth, startSize) {
+    let fontSize = startSize;
+    while (fontSize > 14) {
+        ctx.font = `bold ${fontSize}px Arial`;
+        if (ctx.measureText(text).width <= maxWidth) return fontSize;
+        fontSize -= 2;
+    }
+    return fontSize;
+}
+
+function drawImageCover(ctx, img, x, y, width, height) {
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(x, y, width, height);
+    ctx.clip();
+
+    const imgAspect = img.width / img.height;
+    const cellAspect = width / height;
+    let drawWidth, drawHeight, offsetX, offsetY;
+
+    if (imgAspect > cellAspect) {
+        drawHeight = height;
+        drawWidth = img.width * (height / img.height);
+        offsetX = (width - drawWidth) / 2;
+        offsetY = 0;
+    } else {
+        drawWidth = width;
+        drawHeight = img.height * (width / img.width);
+        offsetX = 0;
+        offsetY = (height - drawHeight) / 2;
+    }
+
+    ctx.drawImage(img, x + offsetX, y + offsetY, drawWidth, drawHeight);
+    ctx.restore();
+}
+
+function drawRoundedRect(ctx, x, y, width, height, radius) {
+    ctx.beginPath();
+    ctx.moveTo(x + radius, y);
+    ctx.lineTo(x + width - radius, y);
+    ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+    ctx.lineTo(x + width, y + height - radius);
+    ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+    ctx.lineTo(x + radius, y + height);
+    ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+    ctx.lineTo(x, y + radius);
+    ctx.quadraticCurveTo(x, y, x + radius, y);
+    ctx.closePath();
+}
+
+// ── Init ─────────────────────────────────────────────────────
 
 function init() {
     loadBingoData();
@@ -84,6 +183,8 @@ function saveBingoData() {
     localStorage.setItem('bingoData', JSON.stringify(bingoData));
 }
 
+// ── Grid ─────────────────────────────────────────────────────
+
 function renderBingoGrid() {
     const grid = document.getElementById('bingoGrid');
     grid.innerHTML = '';
@@ -109,13 +210,19 @@ function renderBingoGrid() {
     });
 }
 
+// ── Event Listeners ──────────────────────────────────────────
+
 function setupEventListeners() {
     document.querySelector('.close').addEventListener('click', closeCamera);
     document.getElementById('captureBtn').addEventListener('click', capturePhoto);
     document.getElementById('switchCameraBtn').addEventListener('click', switchCamera);
     document.getElementById('finalizeBtn').addEventListener('click', createFinalImage);
     document.getElementById('resetBtn').addEventListener('click', resetBingo);
+    document.getElementById('customDialogConfirm').addEventListener('click', () => closeDialog(true));
+    document.getElementById('customDialogCancel').addEventListener('click', () => closeDialog(false));
 }
+
+// ── Camera ───────────────────────────────────────────────────
 
 async function startCamera(facingMode) {
     const video = document.getElementById('video');
@@ -136,7 +243,10 @@ async function startCamera(facingMode) {
             video.srcObject = videoStream;
             return true;
         } catch (fallbackError) {
-            alert('Kamera-Zugriff wurde verweigert. Bitte erlaube den Zugriff in den Browser-Einstellungen.');
+            await showAlert(
+                'Kamera-Zugriff wurde verweigert.\nBitte erlaube den Zugriff in den Browser-Einstellungen.',
+                '📷'
+            );
             return false;
         }
     }
@@ -190,261 +300,96 @@ function capturePhoto() {
     closeCamera();
 }
 
-function getOptimalFontSize(ctx, text, maxWidth, startSize) {
-    let fontSize = startSize;
-    while (fontSize > 14) {
-        ctx.font = `bold ${fontSize}px Arial`;
-        if (ctx.measureText(text).width <= maxWidth) return fontSize;
-        fontSize -= 2;
-    }
-    return fontSize;
-}
+// ── Final Image ──────────────────────────────────────────────
 
-function drawImageCover(ctx, img, x, y, width, height) {
-    ctx.save();
-    ctx.beginPath();
-    ctx.rect(x, y, width, height);
-    ctx.clip();
+function drawFinalHeader(ctx, logoImg, groupName, totalWidth, headerHeight) {
+    const hasGroupName = groupName.trim().length > 0;
+    const logoAreaH = hasGroupName ? 105 : headerHeight;
 
-    const imgAspect = img.width / img.height;
-    const cellAspect = width / height;
-    let drawWidth, drawHeight, offsetX, offsetY;
-
-    if (imgAspect > cellAspect) {
-        drawHeight = height;
-        drawWidth = img.width * (height / img.height);
-        offsetX = (width - drawWidth) / 2;
-        offsetY = 0;
+    // Logo centered in logo area
+    if (logoImg) {
+        const logoMaxH = 62;
+        const logoMaxW = totalWidth * 0.28;
+        let lH = logoMaxH;
+        let lW = logoImg.width * (lH / logoImg.height);
+        if (lW > logoMaxW) {
+            lW = logoMaxW;
+            lH = logoImg.height * (lW / logoImg.width);
+        }
+        ctx.drawImage(logoImg, (totalWidth - lW) / 2, (logoAreaH - lH) / 2, lW, lH);
     } else {
-        drawWidth = width;
-        drawHeight = img.height * (width / img.width);
-        offsetX = 0;
-        offsetY = (height - drawHeight) / 2;
+        ctx.fillStyle = '#ffffff';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.font = 'bold 52px Arial';
+        ctx.fillText('Aareon', totalWidth / 2, logoAreaH / 2);
     }
 
-    ctx.drawImage(img, x + offsetX, y + offsetY, drawWidth, drawHeight);
-    ctx.restore();
+    if (!hasGroupName) return;
+
+    // Subtle divider
+    const divPad = totalWidth * 0.12;
+    ctx.strokeStyle = 'rgba(255,255,255,0.22)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(divPad, logoAreaH);
+    ctx.lineTo(totalWidth - divPad, logoAreaH);
+    ctx.stroke();
+
+    // Group name in a pill badge
+    const nameAreaH = headerHeight - logoAreaH;
+    ctx.font = 'bold 38px Arial';
+    const textW = ctx.measureText(groupName).width;
+    const pillPx = 52, pillPy = 14;
+    const pillW = textW + pillPx * 2;
+    const pillH = 38 + pillPy * 2;
+    const pillX = (totalWidth - pillW) / 2;
+    const pillY = logoAreaH + (nameAreaH - pillH) / 2;
+
+    // Pill background
+    ctx.fillStyle = 'rgba(255,255,255,0.1)';
+    drawRoundedRect(ctx, pillX, pillY, pillW, pillH, pillH / 2);
+    ctx.fill();
+
+    // Pill border
+    ctx.strokeStyle = 'rgba(255,255,255,0.28)';
+    ctx.lineWidth = 2;
+    drawRoundedRect(ctx, pillX, pillY, pillW, pillH, pillH / 2);
+    ctx.stroke();
+
+    // Group name text
+    ctx.fillStyle = '#ffffff';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.font = 'bold 38px Arial';
+    ctx.fillText(groupName, totalWidth / 2, pillY + pillH / 2);
 }
 
-function createFinalImage() {
+async function createFinalImage() {
     const completedCount = bingoData.filter(cell => cell.completed).length;
 
     if (completedCount === 0) {
-        alert('Bitte mache mindestens ein Foto, bevor du das Bingo fertigstellst!');
+        await showAlert(
+            'Bitte mache mindestens ein Foto,\nbevor du das Bingo fertigstellst!',
+            '⚠️'
+        );
         return;
     }
 
     if (completedCount < 16) {
-        const confirmed = confirm(
-            `Du hast ${completedCount} von 16 Feldern ausgefüllt.\n\n` +
-            'Möchtest du das Bingo trotzdem fertigstellen?\n\n' +
-            'Nicht ausgefüllte Felder werden leer angezeigt.'
+        const confirmed = await showConfirm(
+            `Du hast ${completedCount} von 16 Feldern ausgefüllt.\n\nMöchtest du das Bingo trotzdem fertigstellen?\n\nNicht ausgefüllte Felder werden leer angezeigt.`,
+            '🎊'
         );
         if (!confirmed) return;
     }
 
     const btn = document.getElementById('finalizeBtn');
-    btn.textContent = '⏳ Bild wird erstellt...';
+    btn.textContent = '⏳ Wird erstellt...';
     btn.disabled = true;
 
     const finalCanvas = document.getElementById('finalCanvas');
     const ctx = finalCanvas.getContext('2d');
 
     const groupName = localStorage.getItem('bingoGroupName') || '';
-    const gridSize = 4;
-    const cellSize = 400;
-    const gap = 10;
-    const padding = 20;
-
-    // Header: logo row + optional group name row
-    const logoHeight = 80;
-    const groupNameHeight = groupName.trim() ? 60 : 0;
-    const headerHeight = logoHeight + groupNameHeight;
-
-    const totalWidth  = (cellSize * gridSize) + (gap * (gridSize - 1)) + (padding * 2);
-    const totalHeight = totalWidth + headerHeight;
-
-    finalCanvas.width  = totalWidth;
-    finalCanvas.height = totalHeight;
-
-    // ── Background: Aareon navy ──────────────────────────────
-    ctx.fillStyle = '#0B1464';
-    ctx.fillRect(0, 0, totalWidth, totalHeight);
-
-    // ── Aareon logo (white version) in header ────────────────
-    const logoImg = new Image();
-    logoImg.src = 'aareon_logo_white.png';
-    logoImg.onload = () => {
-        // Draw logo centred in the logo row; max height = 56px
-        const logoDrawH = 56;
-        const logoDrawW = logoImg.width * (logoDrawH / logoImg.height);
-        const logoX = (totalWidth - logoDrawW) / 2;
-        const logoY = (logoHeight - logoDrawH) / 2;
-        ctx.drawImage(logoImg, logoX, logoY, logoDrawW, logoDrawH);
-
-        // ── Optional group name ──────────────────────────────
-        if (groupName.trim()) {
-            ctx.fillStyle = 'rgba(255,255,255,0.15)';
-            ctx.fillRect(0, logoHeight, totalWidth, groupNameHeight);
-            ctx.fillStyle = '#ffffff';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.font = 'bold 36px Arial';
-            ctx.fillText(groupName, totalWidth / 2, logoHeight + groupNameHeight / 2);
-        }
-
-        // ── Cells ────────────────────────────────────────────
-        let processedCount = 0;
-        const totalCells = bingoData.length;
-
-        const checkComplete = () => {
-            processedCount++;
-            if (processedCount === totalCells) {
-                const link = document.createElement('a');
-                const timestamp = new Date().toISOString().slice(0, 10);
-                const safeName = groupName.trim().replace(/[^a-z0-9]/gi, '-') || 'bingo';
-                link.download = `aareon-kollegen-bingo-${safeName}-${timestamp}.jpg`;
-                link.href = finalCanvas.toDataURL('image/jpeg', 0.9);
-                link.click();
-
-                btn.textContent = '🎊 Bingo Fertigstellen & Bild Erstellen 🎊';
-                btn.disabled = false;
-            }
-        };
-
-        bingoData.forEach((cell, index) => {
-            const row = Math.floor(index / gridSize);
-            const col = index % gridSize;
-            const x = padding + (col * (cellSize + gap));
-            const y = padding + headerHeight + (row * (cellSize + gap));
-
-            if (cell.completed && cell.photo) {
-                const img = new Image();
-                img.onload = () => {
-                    ctx.fillStyle = '#ffffff';
-                    ctx.fillRect(x, y, cellSize, cellSize);
-                    drawImageCover(ctx, img, x, y, cellSize, cellSize);
-
-                    const textHeight = 55;
-                    ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
-                    ctx.fillRect(x, y, cellSize, textHeight);
-
-                    ctx.fillStyle = '#ffffff';
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
-                    const fontSize = getOptimalFontSize(ctx, cell.question, cellSize - 30, 26);
-                    ctx.font = `bold ${fontSize}px Arial`;
-                    ctx.fillText(cell.question, x + cellSize / 2, y + textHeight / 2);
-
-                    checkComplete();
-                };
-                img.onerror = () => checkComplete();
-                img.src = cell.photo;
-            } else {
-                // Empty cell: lighter navy with Aareon-coloured text
-                ctx.fillStyle = '#f0f2ff';
-                ctx.fillRect(x, y, cellSize, cellSize);
-
-                ctx.strokeStyle = '#0B1464';
-                ctx.lineWidth = 3;
-                ctx.strokeRect(x, y, cellSize, cellSize);
-
-                ctx.fillStyle = '#0B1464';
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                const fontSize = getOptimalFontSize(ctx, cell.question, cellSize - 50, 34);
-                ctx.font = `bold ${fontSize}px Arial`;
-                ctx.fillText(cell.question, x + cellSize / 2, y + cellSize / 2);
-
-                checkComplete();
-            }
-        });
-    };
-
-    // Fallback if logo fails to load: draw text "Aareon" instead
-    logoImg.onerror = () => {
-        ctx.fillStyle = '#ffffff';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.font = 'bold 52px Arial';
-        ctx.fillText('Aareon', totalWidth / 2, logoHeight / 2);
-        // continue with cell rendering as above...
-        if (groupName.trim()) {
-            ctx.fillStyle = 'rgba(255,255,255,0.15)';
-            ctx.fillRect(0, logoHeight, totalWidth, groupNameHeight);
-            ctx.fillStyle = '#ffffff';
-            ctx.font = 'bold 36px Arial';
-            ctx.fillText(groupName, totalWidth / 2, logoHeight + groupNameHeight / 2);
-        }
-        let processedCount = 0;
-        const totalCells = bingoData.length;
-        const checkComplete = () => {
-            processedCount++;
-            if (processedCount === totalCells) {
-                const link = document.createElement('a');
-                const timestamp = new Date().toISOString().slice(0, 10);
-                const safeName = groupName.trim().replace(/[^a-z0-9]/gi, '-') || 'bingo';
-                link.download = `aareon-kollegen-bingo-${safeName}-${timestamp}.jpg`;
-                link.href = finalCanvas.toDataURL('image/jpeg', 0.9);
-                link.click();
-                btn.textContent = '🎊 Bingo Fertigstellen & Bild Erstellen 🎊';
-                btn.disabled = false;
-            }
-        };
-        bingoData.forEach((cell, index) => {
-            const row = Math.floor(index / gridSize);
-            const col = index % gridSize;
-            const x = padding + (col * (cellSize + gap));
-            const y = padding + headerHeight + (row * (cellSize + gap));
-            if (cell.completed && cell.photo) {
-                const img = new Image();
-                img.onload = () => {
-                    ctx.fillStyle = '#ffffff';
-                    ctx.fillRect(x, y, cellSize, cellSize);
-                    drawImageCover(ctx, img, x, y, cellSize, cellSize);
-                    const textHeight = 55;
-                    ctx.fillStyle = 'rgba(0,0,0,0.75)';
-                    ctx.fillRect(x, y, cellSize, textHeight);
-                    ctx.fillStyle = '#ffffff';
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
-                    const fontSize = getOptimalFontSize(ctx, cell.question, cellSize - 30, 26);
-                    ctx.font = `bold ${fontSize}px Arial`;
-                    ctx.fillText(cell.question, x + cellSize / 2, y + textHeight / 2);
-                    checkComplete();
-                };
-                img.onerror = () => checkComplete();
-                img.src = cell.photo;
-            } else {
-                ctx.fillStyle = '#f0f2ff';
-                ctx.fillRect(x, y, cellSize, cellSize);
-                ctx.strokeStyle = '#0B1464';
-                ctx.lineWidth = 3;
-                ctx.strokeRect(x, y, cellSize, cellSize);
-                ctx.fillStyle = '#0B1464';
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                const fontSize = getOptimalFontSize(ctx, cell.question, cellSize - 50, 34);
-                ctx.font = `bold ${fontSize}px Arial`;
-                ctx.fillText(cell.question, x + cellSize / 2, y + cellSize / 2);
-                checkComplete();
-            }
-        });
-    };
-}
-
-function resetBingo() {
-    if (confirm('Möchtest du wirklich alle Daten löschen und neu starten?\n\nDie Fragen werden neu gemischt!')) {
-        localStorage.removeItem('bingoData');
-        bingoData = [];
-        init();
-    }
-}
-
-if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js')
-        .then(() => console.log('Service Worker registered'))
-        .catch(err => console.log('Service Worker registration failed:', err));
-}
-
-init();
+    const hasGroupName = groupName.tri
