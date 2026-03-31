@@ -1,4 +1,4 @@
-const CACHE_NAME = 'aareon-bingo-v5';
+const CACHE_NAME = 'aareon-bingo-v6';
 const urlsToCache = [
   './',
   './index.html',
@@ -6,7 +6,6 @@ const urlsToCache = [
   './app.js',
   './manifest.json',
   './aareon_logo_white.png'
-  // img0_1024x768_NEU.jpg removed – background is now pure CSS
 ];
 
 self.addEventListener('install', event => {
