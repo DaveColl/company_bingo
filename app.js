@@ -17,54 +17,34 @@ const allQuestions = [
     "Kann ein Lied singen"
 ];
 
-const APP_VERSION = '3.1';
-
-function checkForUpdates() {
-    const currentVersion = localStorage.getItem('appVersion');
-    if (currentVersion !== APP_VERSION) {
-        localStorage.setItem('appVersion', APP_VERSION);
-        if ('caches' in window) {
-            caches.keys().then(names => names.forEach(name => caches.delete(name)));
-        }
-        if (currentVersion !== null) {
-            window.location.reload(true);
-        }
-    }
-}
-
-checkForUpdates();
-
-let bingoData = [];
-let currentCellIndex = null;
-let videoStream = null;
-let currentFacingMode = 'environment';
-let dialogResolve = null;
+const APP_VERSION = '3.2';
 
 // ── Custom Dialog ────────────────────────────────────────────
 
-function showDialog(message, type = 'alert', icon = '') {
-    return new Promise((resolve) => {
-        dialogResolve = resolve;
-        const overlay = document.getElementById('customDialog');
-        const iconEl = document.getElementById('customDialogIcon');
-        const msgEl = document.getElementById('customDialogMessage');
-        const cancelBtn = document.getElementById('customDialogCancel');
+let dialogResolve = null;
 
-        iconEl.textContent = icon;
+function showDialog(message, type, icon) {
+    return new Promise(function(resolve) {
+        dialogResolve = resolve;
+        var overlay  = document.getElementById('customDialog');
+        var iconEl   = document.getElementById('customDialogIcon');
+        var msgEl    = document.getElementById('customDialogMessage');
+        var cancelBtn = document.getElementById('customDialogCancel');
+
+        iconEl.textContent = icon || '';
         iconEl.style.display = icon ? 'block' : 'none';
         msgEl.textContent = message;
-        cancelBtn.style.display = type === 'confirm' ? '' : 'none';
-
+        cancelBtn.style.display = (type === 'confirm') ? '' : 'none';
         overlay.classList.add('active');
     });
 }
 
-function showAlert(message, icon = 'ℹ️') {
-    return showDialog(message, 'alert', icon);
+function showAlert(message, icon) {
+    return showDialog(message, 'alert', icon || 'ℹ️');
 }
 
-function showConfirm(message, icon = '') {
-    return showDialog(message, 'confirm', icon);
+function showConfirm(message, icon) {
+    return showDialog(message, 'confirm', icon || '');
 }
 
 function closeDialog(result) {
@@ -78,27 +58,29 @@ function closeDialog(result) {
 // ── Helpers ──────────────────────────────────────────────────
 
 function loadImage(src) {
-    return new Promise((resolve) => {
-        const img = new Image();
-        img.onload = () => resolve(img);
-        img.onerror = () => resolve(null);
+    return new Promise(function(resolve) {
+        var img = new Image();
+        img.onload  = function() { resolve(img); };
+        img.onerror = function() { resolve(null); };
         img.src = src;
     });
 }
 
 function shuffleArray(array) {
-    const shuffled = [...array];
-    for (let i = shuffled.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    var shuffled = array.slice();
+    for (var i = shuffled.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var tmp = shuffled[i];
+        shuffled[i] = shuffled[j];
+        shuffled[j] = tmp;
     }
     return shuffled;
 }
 
 function getOptimalFontSize(ctx, text, maxWidth, startSize) {
-    let fontSize = startSize;
+    var fontSize = startSize;
     while (fontSize > 14) {
-        ctx.font = `bold ${fontSize}px Arial`;
+        ctx.font = 'bold ' + fontSize + 'px Arial';
         if (ctx.measureText(text).width <= maxWidth) return fontSize;
         fontSize -= 2;
     }
@@ -111,51 +93,49 @@ function drawImageCover(ctx, img, x, y, width, height) {
     ctx.rect(x, y, width, height);
     ctx.clip();
 
-    const imgAspect = img.width / img.height;
-    const cellAspect = width / height;
-    let drawWidth, drawHeight, offsetX, offsetY;
+    var imgAspect  = img.width / img.height;
+    var cellAspect = width / height;
+    var drawWidth, drawHeight, offsetX, offsetY;
 
     if (imgAspect > cellAspect) {
         drawHeight = height;
-        drawWidth = img.width * (height / img.height);
-        offsetX = (width - drawWidth) / 2;
-        offsetY = 0;
+        drawWidth  = img.width * (height / img.height);
+        offsetX    = (width - drawWidth) / 2;
+        offsetY    = 0;
     } else {
-        drawWidth = width;
+        drawWidth  = width;
         drawHeight = img.height * (width / img.width);
-        offsetX = 0;
-        offsetY = (height - drawHeight) / 2;
+        offsetX    = 0;
+        offsetY    = (height - drawHeight) / 2;
     }
 
     ctx.drawImage(img, x + offsetX, y + offsetY, drawWidth, drawHeight);
     ctx.restore();
 }
 
-function drawRoundedRect(ctx, x, y, width, height, radius) {
+function drawRoundedRect(ctx, x, y, w, h, r) {
     ctx.beginPath();
-    ctx.moveTo(x + radius, y);
-    ctx.lineTo(x + width - radius, y);
-    ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
-    ctx.lineTo(x + width, y + height - radius);
-    ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
-    ctx.lineTo(x + radius, y + height);
-    ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
-    ctx.lineTo(x, y + radius);
-    ctx.quadraticCurveTo(x, y, x + radius, y);
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
     ctx.closePath();
 }
 
-// ── Init ─────────────────────────────────────────────────────
+// ── Data ─────────────────────────────────────────────────────
 
-function init() {
-    loadBingoData();
-    loadGroupName();
-    renderBingoGrid();
-    setupEventListeners();
-}
+var bingoData = [];
+var currentCellIndex = null;
+var videoStream = null;
+var currentFacingMode = 'environment';
 
 function loadGroupName() {
-    const saved = localStorage.getItem('bingoGroupName') || '';
+    var saved = localStorage.getItem('bingoGroupName') || '';
     document.getElementById('groupNameInput').value = saved;
 }
 
@@ -164,17 +144,19 @@ function saveGroupName(value) {
 }
 
 function loadBingoData() {
-    const saved = localStorage.getItem('bingoData');
+    var saved = localStorage.getItem('bingoData');
     if (saved) {
-        bingoData = JSON.parse(saved);
-    } else {
-        const shuffledQuestions = shuffleArray(allQuestions);
-        bingoData = shuffledQuestions.map((q, i) => ({
-            id: i,
-            question: q,
-            completed: false,
-            photo: null
-        }));
+        try {
+            bingoData = JSON.parse(saved);
+        } catch (e) {
+            bingoData = [];
+        }
+    }
+    if (!bingoData || bingoData.length === 0) {
+        var shuffled = shuffleArray(allQuestions);
+        bingoData = shuffled.map(function(q, i) {
+            return { id: i, question: q, completed: false, photo: null };
+        });
         saveBingoData();
     }
 }
@@ -186,49 +168,58 @@ function saveBingoData() {
 // ── Grid ─────────────────────────────────────────────────────
 
 function renderBingoGrid() {
-    const grid = document.getElementById('bingoGrid');
+    var grid = document.getElementById('bingoGrid');
+    if (!grid) return;
     grid.innerHTML = '';
 
-    bingoData.forEach((cell, index) => {
-        const cellDiv = document.createElement('div');
+    bingoData.forEach(function(cell, index) {
+        var cellDiv = document.createElement('div');
         cellDiv.className = 'bingo-cell' + (cell.completed ? ' completed' : '');
         cellDiv.dataset.index = index;
 
         if (cell.completed && cell.photo) {
-            const img = document.createElement('img');
+            var img = document.createElement('img');
             img.src = cell.photo;
             cellDiv.appendChild(img);
         }
 
-        const text = document.createElement('div');
+        var text = document.createElement('div');
         text.className = 'text';
         text.textContent = cell.question;
         cellDiv.appendChild(text);
 
-        cellDiv.addEventListener('click', () => openCamera(index));
+        cellDiv.addEventListener('click', function() { openCamera(index); });
         grid.appendChild(cellDiv);
     });
 }
 
-// ── Event Listeners ──────────────────────────────────────────
+// ── Event Listeners (called once only) ───────────────────────
 
 function setupEventListeners() {
-    document.querySelector('.close')?.addEventListener('click', closeCamera);
-    document.getElementById('captureBtn')?.addEventListener('click', capturePhoto);
-    document.getElementById('switchCameraBtn')?.addEventListener('click', switchCamera);
-    document.getElementById('finalizeBtn')?.addEventListener('click', createFinalImage);
-    document.getElementById('resetBtn')?.addEventListener('click', resetBingo);
-    document.getElementById('customDialogConfirm')?.addEventListener('click', () => closeDialog(true));
-    document.getElementById('customDialogCancel')?.addEventListener('click', () => closeDialog(false));
+    var closeBtn    = document.querySelector('.close');
+    var captureBtn  = document.getElementById('captureBtn');
+    var switchBtn   = document.getElementById('switchCameraBtn');
+    var finalizeBtn = document.getElementById('finalizeBtn');
+    var resetBtn    = document.getElementById('resetBtn');
+    var dlgConfirm  = document.getElementById('customDialogConfirm');
+    var dlgCancel   = document.getElementById('customDialogCancel');
+
+    if (closeBtn)    closeBtn.addEventListener('click', closeCamera);
+    if (captureBtn)  captureBtn.addEventListener('click', capturePhoto);
+    if (switchBtn)   switchBtn.addEventListener('click', switchCamera);
+    if (finalizeBtn) finalizeBtn.addEventListener('click', createFinalImage);
+    if (resetBtn)    resetBtn.addEventListener('click', resetBingo);
+    if (dlgConfirm)  dlgConfirm.addEventListener('click', function() { closeDialog(true); });
+    if (dlgCancel)   dlgCancel.addEventListener('click', function() { closeDialog(false); });
 }
 
 // ── Camera ───────────────────────────────────────────────────
 
 async function startCamera(facingMode) {
-    const video = document.getElementById('video');
+    var video = document.getElementById('video');
     try {
         if (videoStream) {
-            videoStream.getTracks().forEach(track => track.stop());
+            videoStream.getTracks().forEach(function(t) { t.stop(); });
         }
         videoStream = await navigator.mediaDevices.getUserMedia({
             video: { facingMode: facingMode },
@@ -237,16 +228,13 @@ async function startCamera(facingMode) {
         video.srcObject = videoStream;
         currentFacingMode = facingMode;
         return true;
-    } catch (error) {
+    } catch (err) {
         try {
             videoStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
             video.srcObject = videoStream;
             return true;
-        } catch (fallbackError) {
-            await showAlert(
-                'Kamera-Zugriff wurde verweigert.\nBitte erlaube den Zugriff in den Browser-Einstellungen.',
-                '📷'
-            );
+        } catch (e) {
+            await showAlert('Kamera-Zugriff wurde verweigert.\nBitte erlaube den Zugriff in den Browser-Einstellungen.', '📷');
             return false;
         }
     }
@@ -254,26 +242,25 @@ async function startCamera(facingMode) {
 
 async function openCamera(index) {
     currentCellIndex = index;
-    const modal = document.getElementById('cameraModal');
+    var modal = document.getElementById('cameraModal');
     document.getElementById('modalQuestion').textContent = bingoData[index].question;
     modal.style.display = 'block';
-
-    const success = await startCamera('environment');
-    if (!success) closeCamera();
+    var ok = await startCamera('environment');
+    if (!ok) closeCamera();
 }
 
 async function switchCamera() {
-    const btn = document.getElementById('switchCameraBtn');
+    var btn = document.getElementById('switchCameraBtn');
     btn.classList.add('rotating');
-    setTimeout(() => btn.classList.remove('rotating'), 500);
-    const newFacingMode = currentFacingMode === 'environment' ? 'user' : 'environment';
-    await startCamera(newFacingMode);
+    setTimeout(function() { btn.classList.remove('rotating'); }, 500);
+    var next = currentFacingMode === 'environment' ? 'user' : 'environment';
+    await startCamera(next);
 }
 
 function closeCamera() {
-    const video = document.getElementById('video');
+    var video = document.getElementById('video');
     if (videoStream) {
-        videoStream.getTracks().forEach(track => track.stop());
+        videoStream.getTracks().forEach(function(t) { t.stop(); });
         videoStream = null;
     }
     video.srcObject = null;
@@ -282,18 +269,17 @@ function closeCamera() {
 }
 
 function capturePhoto() {
-    const video = document.getElementById('video');
-    const canvas = document.getElementById('canvas');
-    const context = canvas.getContext('2d');
+    var video   = document.getElementById('video');
+    var canvas  = document.getElementById('canvas');
+    var context = canvas.getContext('2d');
 
-    canvas.width = video.videoWidth;
+    canvas.width  = video.videoWidth;
     canvas.height = video.videoHeight;
     context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-    const photoData = canvas.toDataURL('image/jpeg', 0.8);
-
+    var photoData = canvas.toDataURL('image/jpeg', 0.8);
     bingoData[currentCellIndex].completed = true;
-    bingoData[currentCellIndex].photo = photoData;
+    bingoData[currentCellIndex].photo     = photoData;
 
     saveBingoData();
     renderBingoGrid();
@@ -303,19 +289,15 @@ function capturePhoto() {
 // ── Final Image ──────────────────────────────────────────────
 
 function drawFinalHeader(ctx, logoImg, groupName, totalWidth, headerHeight) {
-    const hasGroupName = groupName.trim().length > 0;
-    const logoAreaH = hasGroupName ? 105 : headerHeight;
+    var hasName   = groupName.trim().length > 0;
+    var logoAreaH = hasName ? 105 : headerHeight;
 
-    // Logo centered in logo area
     if (logoImg) {
-        const logoMaxH = 62;
-        const logoMaxW = totalWidth * 0.28;
-        let lH = logoMaxH;
-        let lW = logoImg.width * (lH / logoImg.height);
-        if (lW > logoMaxW) {
-            lW = logoMaxW;
-            lH = logoImg.height * (lW / logoImg.width);
-        }
+        var logoMaxH = 62;
+        var logoMaxW = totalWidth * 0.28;
+        var lH = logoMaxH;
+        var lW = logoImg.width * (lH / logoImg.height);
+        if (lW > logoMaxW) { lW = logoMaxW; lH = logoImg.height * (lW / logoImg.width); }
         ctx.drawImage(logoImg, (totalWidth - lW) / 2, (logoAreaH - lH) / 2, lW, lH);
     } else {
         ctx.fillStyle = '#ffffff';
@@ -325,39 +307,35 @@ function drawFinalHeader(ctx, logoImg, groupName, totalWidth, headerHeight) {
         ctx.fillText('Aareon', totalWidth / 2, logoAreaH / 2);
     }
 
-    if (!hasGroupName) return;
+    if (!hasName) return;
 
-    // Subtle divider
-    const divPad = totalWidth * 0.12;
+    // Divider
     ctx.strokeStyle = 'rgba(255,255,255,0.22)';
     ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.moveTo(divPad, logoAreaH);
-    ctx.lineTo(totalWidth - divPad, logoAreaH);
+    ctx.moveTo(totalWidth * 0.12, logoAreaH);
+    ctx.lineTo(totalWidth * 0.88, logoAreaH);
     ctx.stroke();
 
-    // Group name in a pill badge
-    const nameAreaH = headerHeight - logoAreaH;
+    // Group name pill
+    var nameAreaH = headerHeight - logoAreaH;
     ctx.font = 'bold 38px Arial';
-    const textW = ctx.measureText(groupName).width;
-    const pillPx = 52, pillPy = 14;
-    const pillW = textW + pillPx * 2;
-    const pillH = 38 + pillPy * 2;
-    const pillX = (totalWidth - pillW) / 2;
-    const pillY = logoAreaH + (nameAreaH - pillH) / 2;
+    var textW  = ctx.measureText(groupName).width;
+    var pillPx = 52, pillPy = 14;
+    var pillW  = textW + pillPx * 2;
+    var pillH  = 38 + pillPy * 2;
+    var pillX  = (totalWidth - pillW) / 2;
+    var pillY  = logoAreaH + (nameAreaH - pillH) / 2;
 
-    // Pill background
     ctx.fillStyle = 'rgba(255,255,255,0.1)';
     drawRoundedRect(ctx, pillX, pillY, pillW, pillH, pillH / 2);
     ctx.fill();
 
-    // Pill border
     ctx.strokeStyle = 'rgba(255,255,255,0.28)';
     ctx.lineWidth = 2;
     drawRoundedRect(ctx, pillX, pillY, pillW, pillH, pillH / 2);
     ctx.stroke();
 
-    // Group name text
     ctx.fillStyle = '#ffffff';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
@@ -366,30 +344,32 @@ function drawFinalHeader(ctx, logoImg, groupName, totalWidth, headerHeight) {
 }
 
 async function createFinalImage() {
-    const completedCount = bingoData.filter(cell => cell.completed).length;
+    var completedCount = bingoData.filter(function(c) { return c.completed; }).length;
 
     if (completedCount === 0) {
-        await showAlert(
-            'Bitte mache mindestens ein Foto,\nbevor du das Bingo fertigstellst!',
-            '⚠️'
-        );
+        await showAlert('Bitte mache mindestens ein Foto,\nbevor du das Bingo fertigstellst!', '⚠️');
         return;
     }
 
     if (completedCount < 16) {
-        const confirmed = await showConfirm(
-            `Du hast ${completedCount} von 16 Feldern ausgefüllt.\n\nMöchtest du das Bingo trotzdem fertigstellen?\n\nNicht ausgefüllte Felder werden leer angezeigt.`,
+        var go = await showConfirm(
+            'Du hast ' + completedCount + ' von 16 Feldern ausgefüllt.\n\nMöchtest du das Bingo trotzdem fertigstellen?\n\nNicht ausgefüllte Felder werden leer angezeigt.',
             '🎊'
         );
-        if (!confirmed) return;
+        if (!go) return;
     }
 
-    const btn = document.getElementById('finalizeBtn');
+    var btn = document.getElementById('finalizeBtn');
     btn.textContent = '⏳ Wird erstellt...';
     btn.disabled = true;
 
-    const finalCanvas = document.getElementById('finalCanvas');
-    const ctx = finalCanvas.getContext('2d');
-
-    const groupName = localStorage.getItem('bingoGroupName') || '';
-    const hasGroupName = groupName.tri
+    var finalCanvas = document.getElementById('finalCanvas');
+    var ctx         = finalCanvas.getContext('2d');
+    var groupName   = localStorage.getItem('bingoGroupName') || '';
+    var hasName     = groupName.trim().length > 0;
+    var gridSize    = 4;
+    var cellSize    = 400;
+    var gap         = 10;
+    var padding     = 20;
+    var headerH     = hasName ? 175 : 110;
+    var totalW      = (cellSize * gridSize) + (gap * (gridSize -
