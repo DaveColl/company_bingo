@@ -337,12 +337,27 @@ function drawFinalHeader(ctx, logoImg, groupName, totalWidth, headerHeight) {
     var lW = logoImg.width * (lH / logoImg.height);
     if (lW > logoMaxW) { lW = logoMaxW; lH = logoImg.height * (lW / logoImg.width); }
 
-    // 'screen' blend: black + any = that color (invisible); white + any = white
-    // This removes the solid black background from the PNG without needing
-    // a transparent version of the logo.
-    ctx.globalCompositeOperation = 'screen';
-    ctx.drawImage(logoImg, (totalWidth - lW) / 2, (logoAreaH - lH) / 2, lW, lH);
-    ctx.globalCompositeOperation = 'source-over';
+    // Strip the solid black background from the logo PNG by drawing it to an
+    // offscreen canvas, reading the pixel data, and setting any dark pixel
+    // (luminance < 80) to fully transparent before drawing onto the main canvas.
+    var offW = Math.round(lW);
+    var offH = Math.round(lH);
+    var off  = document.createElement('canvas');
+    off.width  = offW;
+    off.height = offH;
+    var offCtx = off.getContext('2d');
+    offCtx.drawImage(logoImg, 0, 0, offW, offH);
+    var idata = offCtx.getImageData(0, 0, offW, offH);
+    var d = idata.data;
+    for (var p = 0; p < d.length; p += 4) {
+      // luminance approximation
+      var lum = 0.299 * d[p] + 0.587 * d[p+1] + 0.114 * d[p+2];
+      if (lum < 80) {
+        d[p+3] = 0; // make dark pixels transparent
+      }
+    }
+    offCtx.putImageData(idata, 0, 0);
+    ctx.drawImage(off, (totalWidth - offW) / 2, (logoAreaH - offH) / 2, offW, offH);
   } else {
     ctx.fillStyle    = '#ffffff';
     ctx.textAlign    = 'center';
