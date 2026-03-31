@@ -1,11 +1,11 @@
 {
-  "name": "Kollegen Bingo",
-  "short_name": "Bingo",
-  "description": "Coworker Bingo Game mit Foto-Funktion",
+  "name": "Aareon Kollegen Bingo",
+  "short_name": "Aareon Bingo",
+  "description": "Aareon Coworker Bingo Game mit Foto-Funktion",
   "start_url": "./index.html",
   "display": "fullscreen",
-  "background_color": "#2563b8",
-  "theme_color": "#2563b8",
+  "background_color": "#0B1464",
+  "theme_color": "#0B1464",
   "orientation": "portrait",
   "icons": [
     {
