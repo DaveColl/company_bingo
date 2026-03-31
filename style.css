@@ -4,7 +4,6 @@
   box-sizing: border-box;
 }
 
-/* ── Background: pure CSS blobs – no image file needed, scales perfectly ── */
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   background-color: #07104a;
@@ -20,11 +19,6 @@ body::before {
   position: fixed;
   inset: 0;
   z-index: -1;
-  /*
-   * Two hard-edged circular blobs replicating the original background image:
-   * bottom-left and top-right, bright blue on dark navy.
-   * The ~6% transition zone gives the slight soft edge from the original.
-   */
   background:
     radial-gradient(circle 80vmax at -10% 110%,
       #1636c8 0%,
@@ -269,23 +263,29 @@ body::before {
   line-height: 1.4;
 }
 
+/* ── Video container: square crop preview ────────────────── */
+/* aspect-ratio:1 + overflow:hidden gives a square viewport.  */
+/* The video fills it with object-fit:cover, which is the     */
+/* same centre-crop behaviour as capturePhoto() in app.js.    */
+
 .video-container {
   position: relative;
   width: 100%;
-  margin-bottom: 15px;
-  /* Keeps a 4:3 area reserved so layout doesn't jump while camera loads */
-  min-height: 200px;
+  aspect-ratio: 1;
   background: #000;
   border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 15px;
 }
 
 #video {
   width: 100%;
-  border-radius: 10px;
-  background: #000;
+  height: 100%;
   display: block;
-  /* Force the element to show even before metadata loads */
-  min-height: 200px;
+  background: #000;
+  border-radius: 10px;
+  object-fit: cover;   /* centres + crops to square — matches JS capture crop */
+  object-position: center;
 }
 
 .switch-camera-btn {
@@ -418,7 +418,7 @@ body::before {
 @media (max-width: 480px) {
   .aareon-logo { height: 40px; }
   .bingo-cell  { padding: 3px; }
-  .bingo-cell .text          { font-size: clamp(0.45em, 0.65em, 2vw); }
+  .bingo-cell .text           { font-size: clamp(0.45em, 0.65em, 2vw); }
   .bingo-cell.completed .text { font-size: clamp(0.4em,  0.6em,  1.8vw); }
   .switch-camera-btn { width: 45px; height: 45px; font-size: 20px; }
 }
