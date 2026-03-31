@@ -5,7 +5,7 @@ const urlsToCache = [
   './style.css',
   './app.js',
   './manifest.json',
-  './aareon_logo_white.jpg',
+  './aareon_logo_white.png',
   './img0_1024x768_NEU.jpg'
 ];
 
