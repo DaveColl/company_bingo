@@ -17,7 +17,7 @@ const allQuestions = [
     "Kann ein Lied singen"
 ];
 
-const APP_VERSION = '2.0';
+const APP_VERSION = '3.0'; // ← bumped to force cache/storage refresh
 
 function checkForUpdates() {
     const currentVersion = localStorage.getItem('appVersion');
@@ -255,7 +255,11 @@ function createFinalImage() {
     const cellSize = 400;
     const gap = 10;
     const padding = 20;
-    const headerHeight = groupName.trim() ? 80 : 0;
+
+    // Header: logo row + optional group name row
+    const logoHeight = 80;
+    const groupNameHeight = groupName.trim() ? 60 : 0;
+    const headerHeight = logoHeight + groupNameHeight;
 
     const totalWidth  = (cellSize * gridSize) + (gap * (gridSize - 1)) + (padding * 2);
     const totalHeight = totalWidth + headerHeight;
@@ -263,86 +267,170 @@ function createFinalImage() {
     finalCanvas.width  = totalWidth;
     finalCanvas.height = totalHeight;
 
-    // Background
-    ctx.fillStyle = '#2563b8';
+    // ── Background: Aareon navy ──────────────────────────────
+    ctx.fillStyle = '#0B1464';
     ctx.fillRect(0, 0, totalWidth, totalHeight);
 
-    // Group name header
-    if (groupName.trim()) {
+    // ── Aareon logo (white version) in header ────────────────
+    const logoImg = new Image();
+    logoImg.src = 'aareon_logo_white.jpg';
+    logoImg.onload = () => {
+        // Draw logo centred in the logo row; max height = 56px
+        const logoDrawH = 56;
+        const logoDrawW = logoImg.width * (logoDrawH / logoImg.height);
+        const logoX = (totalWidth - logoDrawW) / 2;
+        const logoY = (logoHeight - logoDrawH) / 2;
+        ctx.drawImage(logoImg, logoX, logoY, logoDrawW, logoDrawH);
+
+        // ── Optional group name ──────────────────────────────
+        if (groupName.trim()) {
+            ctx.fillStyle = 'rgba(255,255,255,0.15)';
+            ctx.fillRect(0, logoHeight, totalWidth, groupNameHeight);
+            ctx.fillStyle = '#ffffff';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.font = 'bold 36px Arial';
+            ctx.fillText(groupName, totalWidth / 2, logoHeight + groupNameHeight / 2);
+        }
+
+        // ── Cells ────────────────────────────────────────────
+        let processedCount = 0;
+        const totalCells = bingoData.length;
+
+        const checkComplete = () => {
+            processedCount++;
+            if (processedCount === totalCells) {
+                const link = document.createElement('a');
+                const timestamp = new Date().toISOString().slice(0, 10);
+                const safeName = groupName.trim().replace(/[^a-z0-9]/gi, '-') || 'bingo';
+                link.download = `aareon-kollegen-bingo-${safeName}-${timestamp}.jpg`;
+                link.href = finalCanvas.toDataURL('image/jpeg', 0.9);
+                link.click();
+
+                btn.textContent = '🎊 Bingo Fertigstellen & Bild Erstellen 🎊';
+                btn.disabled = false;
+            }
+        };
+
+        bingoData.forEach((cell, index) => {
+            const row = Math.floor(index / gridSize);
+            const col = index % gridSize;
+            const x = padding + (col * (cellSize + gap));
+            const y = padding + headerHeight + (row * (cellSize + gap));
+
+            if (cell.completed && cell.photo) {
+                const img = new Image();
+                img.onload = () => {
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillRect(x, y, cellSize, cellSize);
+                    drawImageCover(ctx, img, x, y, cellSize, cellSize);
+
+                    const textHeight = 55;
+                    ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
+                    ctx.fillRect(x, y, cellSize, textHeight);
+
+                    ctx.fillStyle = '#ffffff';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    const fontSize = getOptimalFontSize(ctx, cell.question, cellSize - 30, 26);
+                    ctx.font = `bold ${fontSize}px Arial`;
+                    ctx.fillText(cell.question, x + cellSize / 2, y + textHeight / 2);
+
+                    checkComplete();
+                };
+                img.onerror = () => checkComplete();
+                img.src = cell.photo;
+            } else {
+                // Empty cell: lighter navy with Aareon-coloured text
+                ctx.fillStyle = '#f0f2ff';
+                ctx.fillRect(x, y, cellSize, cellSize);
+
+                ctx.strokeStyle = '#0B1464';
+                ctx.lineWidth = 3;
+                ctx.strokeRect(x, y, cellSize, cellSize);
+
+                ctx.fillStyle = '#0B1464';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                const fontSize = getOptimalFontSize(ctx, cell.question, cellSize - 50, 34);
+                ctx.font = `bold ${fontSize}px Arial`;
+                ctx.fillText(cell.question, x + cellSize / 2, y + cellSize / 2);
+
+                checkComplete();
+            }
+        });
+    };
+
+    // Fallback if logo fails to load: draw text "Aareon" instead
+    logoImg.onerror = () => {
         ctx.fillStyle = '#ffffff';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.font = 'bold 48px Arial';
-        ctx.fillText(groupName, totalWidth / 2, headerHeight / 2);
-    }
-
-    let processedCount = 0;
-    const totalCells = bingoData.length;
-
-    const checkComplete = () => {
-        processedCount++;
-        if (processedCount === totalCells) {
-            const link = document.createElement('a');
-            const timestamp = new Date().toISOString().slice(0, 10);
-            const safeName = groupName.trim().replace(/[^a-z0-9]/gi, '-') || 'bingo';
-            link.download = `kollegen-bingo-${safeName}-${timestamp}.jpg`;
-            link.href = finalCanvas.toDataURL('image/jpeg', 0.9);
-            link.click();
-
-            btn.textContent = '🎊 Bingo Fertigstellen & Bild Erstellen 🎊';
-            btn.disabled = false;
+        ctx.font = 'bold 52px Arial';
+        ctx.fillText('Aareon', totalWidth / 2, logoHeight / 2);
+        // continue with cell rendering as above...
+        if (groupName.trim()) {
+            ctx.fillStyle = 'rgba(255,255,255,0.15)';
+            ctx.fillRect(0, logoHeight, totalWidth, groupNameHeight);
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 36px Arial';
+            ctx.fillText(groupName, totalWidth / 2, logoHeight + groupNameHeight / 2);
         }
-    };
-
-    bingoData.forEach((cell, index) => {
-        const row = Math.floor(index / gridSize);
-        const col = index % gridSize;
-        const x = padding + (col * (cellSize + gap));
-        const y = padding + headerHeight + (row * (cellSize + gap));
-
-        if (cell.completed && cell.photo) {
-            const img = new Image();
-            img.onload = () => {
-                ctx.fillStyle = '#ffffff';
+        let processedCount = 0;
+        const totalCells = bingoData.length;
+        const checkComplete = () => {
+            processedCount++;
+            if (processedCount === totalCells) {
+                const link = document.createElement('a');
+                const timestamp = new Date().toISOString().slice(0, 10);
+                const safeName = groupName.trim().replace(/[^a-z0-9]/gi, '-') || 'bingo';
+                link.download = `aareon-kollegen-bingo-${safeName}-${timestamp}.jpg`;
+                link.href = finalCanvas.toDataURL('image/jpeg', 0.9);
+                link.click();
+                btn.textContent = '🎊 Bingo Fertigstellen & Bild Erstellen 🎊';
+                btn.disabled = false;
+            }
+        };
+        bingoData.forEach((cell, index) => {
+            const row = Math.floor(index / gridSize);
+            const col = index % gridSize;
+            const x = padding + (col * (cellSize + gap));
+            const y = padding + headerHeight + (row * (cellSize + gap));
+            if (cell.completed && cell.photo) {
+                const img = new Image();
+                img.onload = () => {
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillRect(x, y, cellSize, cellSize);
+                    drawImageCover(ctx, img, x, y, cellSize, cellSize);
+                    const textHeight = 55;
+                    ctx.fillStyle = 'rgba(0,0,0,0.75)';
+                    ctx.fillRect(x, y, cellSize, textHeight);
+                    ctx.fillStyle = '#ffffff';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    const fontSize = getOptimalFontSize(ctx, cell.question, cellSize - 30, 26);
+                    ctx.font = `bold ${fontSize}px Arial`;
+                    ctx.fillText(cell.question, x + cellSize / 2, y + textHeight / 2);
+                    checkComplete();
+                };
+                img.onerror = () => checkComplete();
+                img.src = cell.photo;
+            } else {
+                ctx.fillStyle = '#f0f2ff';
                 ctx.fillRect(x, y, cellSize, cellSize);
-
-                drawImageCover(ctx, img, x, y, cellSize, cellSize);
-
-                const textHeight = 55;
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
-                ctx.fillRect(x, y, cellSize, textHeight);
-
-                ctx.fillStyle = '#ffffff';
+                ctx.strokeStyle = '#0B1464';
+                ctx.lineWidth = 3;
+                ctx.strokeRect(x, y, cellSize, cellSize);
+                ctx.fillStyle = '#0B1464';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
-
-                const fontSize = getOptimalFontSize(ctx, cell.question, cellSize - 30, 26);
+                const fontSize = getOptimalFontSize(ctx, cell.question, cellSize - 50, 34);
                 ctx.font = `bold ${fontSize}px Arial`;
-                ctx.fillText(cell.question, x + cellSize / 2, y + textHeight / 2);
-
+                ctx.fillText(cell.question, x + cellSize / 2, y + cellSize / 2);
                 checkComplete();
-            };
-            img.onerror = () => checkComplete();
-            img.src = cell.photo;
-        } else {
-            ctx.fillStyle = '#f8f9fa';
-            ctx.fillRect(x, y, cellSize, cellSize);
-
-            ctx.strokeStyle = '#dee2e6';
-            ctx.lineWidth = 2;
-            ctx.strokeRect(x, y, cellSize, cellSize);
-
-            ctx.fillStyle = '#2563b8';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-
-            const fontSize = getOptimalFontSize(ctx, cell.question, cellSize - 50, 34);
-            ctx.font = `bold ${fontSize}px Arial`;
-            ctx.fillText(cell.question, x + cellSize / 2, y + cellSize / 2);
-
-            checkComplete();
-        }
-    });
+            }
+        });
+    };
 }
 
 function resetBingo() {
