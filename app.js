@@ -17,7 +17,7 @@ const allQuestions = [
   "Kann ein Lied singen"
 ];
 
-const APP_VERSION = '3.4';
+const APP_VERSION = '3.5';
 
 // ── Custom Dialog ────────────────────────────────────────────
 
@@ -26,9 +26,9 @@ let dialogResolve = null;
 function showDialog(message, type, icon) {
   return new Promise(function(resolve) {
     dialogResolve = resolve;
-    var overlay  = document.getElementById('customDialog');
-    var iconEl   = document.getElementById('customDialogIcon');
-    var msgEl    = document.getElementById('customDialogMessage');
+    var overlay   = document.getElementById('customDialog');
+    var iconEl    = document.getElementById('customDialogIcon');
+    var msgEl     = document.getElementById('customDialogMessage');
     var cancelBtn = document.getElementById('customDialogCancel');
 
     iconEl.textContent  = icon || '';
@@ -120,10 +120,16 @@ function drawRoundedRect(ctx, x, y, w, h, r) {
   ctx.closePath();
 }
 
-// ── Aareon background (matches the CSS radial-gradient blobs) ─────────────
-// Two sharp-edged circular blobs: bright blue on dark navy.
-// Replicates:  radial-gradient(circle 80vmax at -10% 110%, #1636c8 0-42%, #07104a 49%)
-//              radial-gradient(circle 72vmax at 110% -10%, #1636c8 0-42%, #07104a 49%)
+// ── Aareon background ────────────────────────────────────────
+// Two hard-edged (NO gradient, NO blur) filled circles replicating the
+// Aareon brand background: bright blue blobs on dark navy.
+//
+// CSS reference:
+//   radial-gradient(circle 80vmax at -10% 110%, #1636c8 0..42%, #07104a 49%)
+//   radial-gradient(circle 72vmax at 110% -10%, #1636c8 0..42%, #07104a 49%)
+//
+// The solid colour ends at 42% of the gradient radius → we use that as the
+// circle radius so the edge is pixel-sharp with zero feathering.
 
 function drawAareonBackground(ctx, w, h) {
   var M = Math.max(w, h);
@@ -132,32 +138,17 @@ function drawAareonBackground(ctx, w, h) {
   ctx.fillStyle = '#07104a';
   ctx.fillRect(0, 0, w, h);
 
-  function drawBlob(cx, cy, innerR, outerR) {
-    // Solid core
-    ctx.beginPath();
-    ctx.arc(cx, cy, innerR, 0, Math.PI * 2);
-    ctx.fillStyle = '#1636c8';
-    ctx.fill();
+  // Bottom-left blob  (80vmax × 42% = 33.6% of M)
+  ctx.beginPath();
+  ctx.arc(-0.10 * w, 1.10 * h, 0.336 * M, 0, Math.PI * 2);
+  ctx.fillStyle = '#1636c8';
+  ctx.fill();
 
-    // Narrow soft edge (42% → 49% of the CSS gradient = ~7% of radius)
-    var grad = ctx.createRadialGradient(cx, cy, innerR, cx, cy, outerR);
-    grad.addColorStop(0, '#1636c8');
-    grad.addColorStop(1, 'rgba(7,16,74,0)');
-    ctx.beginPath();
-    ctx.arc(cx, cy, outerR, 0, Math.PI * 2);
-    ctx.fillStyle = grad;
-    ctx.fill();
-  }
-
-  // Bottom-left:  80vmax circle, centre at (-10%, 110%)
-  //   inner = 80% * 42% * M = 0.336 M
-  //   outer = 80% * 52% * M = 0.416 M  (matches transparent stop)
-  drawBlob(-0.10 * w,  1.10 * h,  0.336 * M,  0.416 * M);
-
-  // Top-right:  72vmax circle, centre at (110%, -10%)
-  //   inner = 72% * 42% * M = 0.302 M
-  //   outer = 72% * 52% * M = 0.374 M
-  drawBlob( 1.10 * w, -0.10 * h,  0.302 * M,  0.374 * M);
+  // Top-right blob  (72vmax × 42% = 30.24% of M)
+  ctx.beginPath();
+  ctx.arc(1.10 * w, -0.10 * h, 0.3024 * M, 0, Math.PI * 2);
+  ctx.fillStyle = '#1636c8';
+  ctx.fill();
 }
 
 // ── Data ─────────────────────────────────────────────────────
@@ -213,7 +204,7 @@ function renderBingoGrid() {
     }
 
     var text = document.createElement('div');
-    text.className  = 'text';
+    text.className   = 'text';
     text.textContent = cell.question;
     cellDiv.appendChild(text);
 
@@ -225,13 +216,13 @@ function renderBingoGrid() {
 // ── Event Listeners ───────────────────────────────────────────
 
 function setupEventListeners() {
-  var closeBtn   = document.querySelector('.close');
-  var captureBtn = document.getElementById('captureBtn');
-  var switchBtn  = document.getElementById('switchCameraBtn');
+  var closeBtn    = document.querySelector('.close');
+  var captureBtn  = document.getElementById('captureBtn');
+  var switchBtn   = document.getElementById('switchCameraBtn');
   var finalizeBtn = document.getElementById('finalizeBtn');
-  var resetBtn   = document.getElementById('resetBtn');
-  var dlgConfirm = document.getElementById('customDialogConfirm');
-  var dlgCancel  = document.getElementById('customDialogCancel');
+  var resetBtn    = document.getElementById('resetBtn');
+  var dlgConfirm  = document.getElementById('customDialogConfirm');
+  var dlgCancel   = document.getElementById('customDialogCancel');
 
   if (closeBtn)    closeBtn.addEventListener('click', closeCamera);
   if (captureBtn)  captureBtn.addEventListener('click', capturePhoto);
@@ -326,21 +317,31 @@ function closeCamera() {
   currentFacingMode = 'environment';
 }
 
+// ── Capture: crop to centred square ──────────────────────────
+// The video preview uses object-fit:cover in a 1:1 container, which
+// visually centres and crops the frame to a square. We replicate that
+// exact crop here so the saved photo matches the preview pixel-for-pixel.
+
 function capturePhoto() {
   var video   = document.getElementById('video');
   var canvas  = document.getElementById('canvas');
   var context = canvas.getContext('2d');
 
-  var w = video.videoWidth;
-  var h = video.videoHeight;
-  if (!videoReady || w === 0 || h === 0) {
+  var vw = video.videoWidth;
+  var vh = video.videoHeight;
+  if (!videoReady || vw === 0 || vh === 0) {
     showAlert('Kamera noch nicht bereit.\nBitte warte einen Moment und versuche es erneut.', '📷');
     return;
   }
 
-  canvas.width  = w;
-  canvas.height = h;
-  context.drawImage(video, 0, 0, w, h);
+  // Centre-crop to square — identical to CSS object-fit:cover in a 1:1 box
+  var size = Math.min(vw, vh);
+  var sx   = (vw - size) / 2;
+  var sy   = (vh - size) / 2;
+
+  canvas.width  = size;
+  canvas.height = size;
+  context.drawImage(video, sx, sy, size, size, 0, 0, size, size);
 
   var photoData = canvas.toDataURL('image/jpeg', 0.8);
   bingoData[currentCellIndex].completed = true;
@@ -387,20 +388,18 @@ function drawFinalHeader(ctx, logoImg, groupName, totalWidth, headerHeight) {
     ctx.fillText('Aareon', totalWidth / 2, logoAreaH / 2);
   }
 
-  // ── NO DIVIDER LINE ──────────────────────────────────────────
-  // (removed: the white stroke between logo area and group name pill)
+  // No divider line between logo and group name pill
 
   if (!hasName) return;
 
-  // Group name pill
   var nameAreaH = headerHeight - logoAreaH;
   ctx.font = 'bold 38px Arial';
-  var textW    = ctx.measureText(groupName).width;
-  var pillPx   = 52, pillPy = 14;
-  var pillW    = textW + pillPx * 2;
-  var pillH    = 38 + pillPy * 2;
-  var pillX    = (totalWidth - pillW) / 2;
-  var pillY    = logoAreaH + (nameAreaH - pillH) / 2;
+  var textW  = ctx.measureText(groupName).width;
+  var pillPx = 52, pillPy = 14;
+  var pillW  = textW + pillPx * 2;
+  var pillH  = 38 + pillPy * 2;
+  var pillX  = (totalWidth - pillW) / 2;
+  var pillY  = logoAreaH + (nameAreaH - pillH) / 2;
 
   ctx.fillStyle = 'rgba(255,255,255,0.1)';
   drawRoundedRect(ctx, pillX, pillY, pillW, pillH, pillH / 2);
@@ -453,7 +452,7 @@ async function createFinalImage() {
   finalCanvas.width  = totalW;
   finalCanvas.height = totalH;
 
-  // ── Aareon sharp-blob background (matches the CSS design) ──
+  // Sharp Aareon blob background
   drawAareonBackground(ctx, totalW, totalH);
 
   var logoImg = await loadImage('aareon_logo_white.png');
@@ -543,8 +542,6 @@ function boot() {
   renderBingoGrid();
   setupEventListeners();
 }
-
-// ── Service Worker ────────────────────────────────────────────
 
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js')
