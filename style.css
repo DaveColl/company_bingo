@@ -6,7 +6,11 @@
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #1a4d9e 0%, #2563b8 100%);
+    background-color: #0B1464;
+    background-image: url('img0_1024x768_NEU.jpg');
+    background-size: cover;
+    background-attachment: fixed;
+    background-position: center;
     min-height: 100vh;
     padding: 20px;
     color: #333;
@@ -18,36 +22,50 @@ body {
     margin: 0 auto;
 }
 
-h1 {
-    text-align: center;
-    color: white;
-    margin-bottom: 10px;
-    font-size: 2em;
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+/* ── Header ─────────────────────────────────────────────── */
+.app-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 20px;
+    gap: 10px;
+}
+
+.aareon-logo {
+    height: 52px;
+    width: auto;
+    object-fit: contain;
+    /* The white logo JPG has a dark navy background – blend it away */
+    mix-blend-mode: screen;
+    filter: brightness(1.1);
 }
 
 .subtitle {
     text-align: center;
-    color: rgba(255,255,255,0.95);
-    margin-bottom: 20px;
-    font-size: 0.9em;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.88em;
+    line-height: 1.4;
+    max-width: 440px;
 }
 
+/* ── Grid ────────────────────────────────────────────────── */
 .bingo-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 8px;
     margin-bottom: 20px;
-    background: white;
+    background: rgba(255, 255, 255, 0.12);
     padding: 10px;
-    border-radius: 10px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
 }
 
 .bingo-cell {
     aspect-ratio: 1;
-    background: linear-gradient(135deg, #2563b8 0%, #3b82f6 100%);
-    border: 2px solid #fff;
+    background: linear-gradient(135deg, #0B1464 0%, #1a2580 100%);
+    border: 2px solid rgba(255, 255, 255, 0.35);
     border-radius: 8px;
     display: flex;
     align-items: center;
@@ -66,8 +84,8 @@ h1 {
 }
 
 .bingo-cell.completed {
-    background: #2563b8;
-    box-shadow: 0 0 15px rgba(37, 99, 184, 0.6);
+    background: #0B1464;
+    box-shadow: 0 0 15px rgba(11, 20, 100, 0.7);
     align-items: flex-start;
     padding-top: 4px;
 }
@@ -86,7 +104,7 @@ h1 {
 .bingo-cell .text {
     position: relative;
     z-index: 2;
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
     padding: 4px 6px;
     border-radius: 4px;
     width: 100%;
@@ -105,35 +123,37 @@ h1 {
     font-size: clamp(0.45em, 0.65em, 1.8vw);
     padding: 3px 4px;
     text-shadow:
-        -1px -1px 3px rgba(0,0,0,0.95),
-         1px -1px 3px rgba(0,0,0,0.95),
-        -1px  1px 3px rgba(0,0,0,0.95),
-         1px  1px 3px rgba(0,0,0,0.95),
-         0    0   6px rgba(0,0,0,0.95);
+        -1px -1px 3px rgba(0, 0, 0, 0.95),
+         1px -1px 3px rgba(0, 0, 0, 0.95),
+        -1px  1px 3px rgba(0, 0, 0, 0.95),
+         1px  1px 3px rgba(0, 0, 0, 0.95),
+         0    0   6px rgba(0, 0, 0, 0.95);
     font-weight: 700;
     align-items: flex-start;
 }
 
+/* ── Group name input ────────────────────────────────────── */
 .group-name-input {
     width: 100%;
     padding: 11px 14px;
-    border: 2px solid rgba(255,255,255,0.5);
+    border: 2px solid rgba(255, 255, 255, 0.5);
     border-radius: 8px;
     font-size: 1em;
     font-weight: 600;
-    background: rgba(255,255,255,0.15);
+    background: rgba(255, 255, 255, 0.12);
     color: white;
     text-align: center;
     outline: none;
     transition: border-color 0.2s, background 0.2s;
     margin-bottom: 14px;
 }
-.group-name-input::placeholder { color: rgba(255,255,255,0.6); }
+.group-name-input::placeholder { color: rgba(255, 255, 255, 0.55); }
 .group-name-input:focus {
     border-color: white;
-    background: rgba(255,255,255,0.25);
+    background: rgba(255, 255, 255, 0.22);
 }
 
+/* ── Buttons ─────────────────────────────────────────────── */
 .button-container {
     display: flex;
     flex-direction: column;
@@ -153,9 +173,10 @@ h1 {
 }
 
 .finalize-btn {
-    background: linear-gradient(135deg, #2563b8 0%, #3b82f6 100%);
+    background: linear-gradient(135deg, #0B1464 0%, #1a2580 100%);
     color: white;
-    box-shadow: 0 4px 15px rgba(37, 99, 184, 0.4);
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    box-shadow: 0 4px 15px rgba(11, 20, 100, 0.5);
 }
 
 .finalize-btn:disabled {
@@ -168,15 +189,16 @@ h1 {
 }
 
 .reset-btn {
-    background: #6c757d;
+    background: rgba(255, 255, 255, 0.15);
     color: white;
+    border: 2px solid rgba(255, 255, 255, 0.3);
 }
 
 .reset-btn:active {
     transform: scale(0.98);
 }
 
-/* Modal */
+/* ── Modal ───────────────────────────────────────────────── */
 .modal {
     display: none;
     position: fixed;
@@ -185,7 +207,7 @@ h1 {
     top: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0,0,0,0.9);
+    background-color: rgba(0, 0, 0, 0.9);
     overflow: auto;
 }
 
@@ -218,7 +240,7 @@ h1 {
 
 #modalQuestion {
     text-align: center;
-    color: #2563b8;
+    color: #0B1464;
     margin-bottom: 15px;
     margin-top: 10px;
 }
@@ -244,14 +266,14 @@ h1 {
     height: 50px;
     border-radius: 50%;
     background: rgba(255, 255, 255, 0.9);
-    border: 2px solid #2563b8;
+    border: 2px solid #0B1464;
     font-size: 24px;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     transition: all 0.3s ease;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
     z-index: 10;
 }
 
@@ -272,7 +294,7 @@ h1 {
     width: 100%;
     padding: 15px;
     font-size: 1.2em;
-    background: #2563b8;
+    background: #0B1464;
     color: white;
     border: none;
     border-radius: 8px;
@@ -284,8 +306,9 @@ h1 {
     transform: scale(0.98);
 }
 
+/* ── Responsive ──────────────────────────────────────────── */
 @media (max-width: 480px) {
-    h1 { font-size: 1.5em; }
+    .aareon-logo { height: 40px; }
 
     .bingo-cell { padding: 3px; }
 
