@@ -51,6 +51,23 @@ function closeDialog(result) {
 
 // ── Helpers ──────────────────────────────────────────────────
 
+function getLines(ctx, text, maxWidth) {
+  var words = text.split(' ');
+  var lines = [];
+  var currentLine = '';
+  for (var i = 0; i < words.length; i++) {
+    var testLine = currentLine + words[i] + ' ';
+    if (ctx.measureText(testLine).width > maxWidth && i > 0) {
+      lines.push(currentLine.trim());
+      currentLine = words[i] + ' ';
+    } else {
+      currentLine = testLine;
+    }
+  }
+  lines.push(currentLine.trim());
+  return lines;
+}
+
 function loadImage(src) {
   return new Promise(function(resolve) {
     var img = new Image();
@@ -461,24 +478,27 @@ async function createFinalImage() {
           ctx.fillRect(x, y, cellSize, cellSize);
           drawImageCover(ctx, img, x, y, cellSize, cellSize);
 
-          var th = 55;
+          ctx.font = 'bold 24px Arial';
+          var lines = getLines(ctx, cell.question, cellSize - 30);
+          var lineHeight = 30;
+          var th = (lines.length * lineHeight) + 20;
+
           ctx.fillStyle = 'rgba(0,0,0,0.75)';
           ctx.fillRect(x, y, cellSize, th);
 
           ctx.fillStyle    = '#ffffff';
           ctx.textAlign    = 'center';
           ctx.textBaseline = 'middle';
-          var fs = getOptimalFontSize(ctx, cell.question, cellSize - 30, 26);
-          ctx.font = 'bold ' + fs + 'px Arial';
-          ctx.fillText(cell.question, x + cellSize / 2, y + th / 2);
+          
+          var startY = y + 15 + (lineHeight / 2);
+          for (var i = 0; i < lines.length; i++) {
+            ctx.fillText(lines[i], x + cellSize / 2, startY + (i * lineHeight));
+          }
           resolve();
         };
         img.onerror = function() { resolve(); };
         img.src = cell.photo;
       } else {
-        // ── Empty cell: dark navy gradient matching the app's bingo cell style ──
-        // Diagonal gradient from #0B1464 → #1a2580, white text, subtle white border.
-        // Avoids the eye-burning white of a blank cell against the dark background.
         var grad = ctx.createLinearGradient(x, y, x + cellSize, y + cellSize);
         grad.addColorStop(0, '#0B1464');
         grad.addColorStop(1, '#1a2580');
@@ -489,12 +509,19 @@ async function createFinalImage() {
         ctx.lineWidth   = 3;
         ctx.strokeRect(x, y, cellSize, cellSize);
 
+        ctx.font = 'bold 30px Arial';
+        var lines = getLines(ctx, cell.question, cellSize - 40);
+        var lineHeight = 38;
+        var totalTextHeight = lines.length * lineHeight;
+        
         ctx.fillStyle    = '#ffffff';
         ctx.textAlign    = 'center';
         ctx.textBaseline = 'middle';
-        var fs = getOptimalFontSize(ctx, cell.question, cellSize - 50, 34);
-        ctx.font = 'bold ' + fs + 'px Arial';
-        ctx.fillText(cell.question, x + cellSize / 2, y + cellSize / 2);
+        
+        var startY = y + (cellSize / 2) - (totalTextHeight / 2) + (lineHeight / 2);
+        for (var i = 0; i < lines.length; i++) {
+          ctx.fillText(lines[i], x + cellSize / 2, startY + (i * lineHeight));
+        }
         resolve();
       }
     });
@@ -510,6 +537,7 @@ async function createFinalImage() {
   btn.textContent = '🎊 Bingo Fertigstellen 🎊';
   btn.disabled    = false;
 }
+
 
 // ── Reset ─────────────────────────────────────────────────────
 
