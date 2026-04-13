@@ -164,7 +164,13 @@ function loadBingoData() {
     try { bingoData = JSON.parse(saved); } catch(e) { bingoData = []; }
   }
   if (!bingoData || bingoData.length === 0) {
-    var shuffled = shuffleArray(allQuestions);
+    var FIXED_QUESTION = "Mach ein Foto mit möglichst vielen GLT-Mitgliedern";
+    var FIXED_INDEX    = 9; // bottom-left of the centre 4  (grid: row 2 col 1, 0-based)
+
+    var pool    = allQuestions.filter(function(q) { return q !== FIXED_QUESTION; });
+    var shuffled = shuffleArray(pool);           // 15 questions, randomised
+    shuffled.splice(FIXED_INDEX, 0, FIXED_QUESTION); // inject at slot 9
+
     bingoData = shuffled.map(function(q, i) {
       return { id: i, question: q, completed: false, photo: null };
     });
