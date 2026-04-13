@@ -1,7 +1,6 @@
 const allQuestions = [
   "Kann einen Handstand",
   "Hat ein Haustier",
-  "Foto mit möglichst vielen GLT-Mitgliedern",
   "Trägt heute etwas in Firmenfarben",
   "Kann die Nase mit der Zunge berühren",
   "Foto mit dem Organisationsteam",
