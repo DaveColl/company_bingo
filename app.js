@@ -1,22 +1,19 @@
 const allQuestions = [
-  "Kann einen Handstand",
-  "Hat ein Haustier",
-  "Trägt heute etwas in Firmenfarben",
-  "Kann die Nase mit der Zunge berühren",
-  "Foto mit dem Organisationsteam",
-  "Hat Hund in die Dog Area mitgebracht",
-  "Ist heute mit dem Fahrrad zur Arbeit gekommen",
-  "Foto mit jemandem der zum ersten Mal beim Sommerfest dabei ist",
-  "Foto mit Kollegen aus zwei anderen Abteilungen",
-  "Foto mit jemandem, der diese Woche Geburtstag hat",
-  "Foto mit drei Personen mit gleichem Vornamen",
-  "Foto mit zwei Personen mit gleichem Nachnamen",
-  "Kann einen Spagat",
-  "Foto mit einer Person in gespiegelter Pose",
-  "Foto mit jemandem in derselben Shirt-Farbe",
+  "Mache ein Foto von Personen, die gemeinsam ein Wort mit ihren Körpern darstellen (z. B. 'Aareon')" ,
+  "Mache ein Foto von einer Person, die einen Handstand macht.",
+  "Mache ein Foto von zwei Personen mit einem Altersunterschied von mindestens 20 Jahren.",
+  "Mache ein Foto mit drei Personen, die denselben Vornamen haben.",
+  "Mache ein Foto mit einer Person, die heute besonders auffällige Schuhe trägt.",
+  "Mache ein Foto von einer Person, die versucht, mit der Zunge die Nase zu berühren.",
+  "Mache ein Foto von einer Person, die die eine oder mehrere Corporate-Design-Farben trägt.",
+  "Mache ein Foto in einer Gruppe, in der jede Person eine andere Emotion darstellt.",
+  "Mache ein Foto, auf dem zwei Personen gleichzeitig in die Luft springen.",
+  "Mache ein Foto mit so vielen GLT-Mitgliedern wie möglich.",
+  "Mache ein Foto mit einer Person, die heute zum ersten Mal beim Sommerfest ist.",
+  "Mache ein Foto mit so vielen vom Organisationsteam wie möglich."
 ];
 
-const APP_VERSION = '3.6';
+const APP_VERSION = '4.0';
 
 // ── Custom Dialog ────────────────────────────────────────────
 
@@ -180,12 +177,7 @@ function loadBingoData() {
     try { bingoData = JSON.parse(saved); } catch(e) { bingoData = []; }
   }
   if (!bingoData || bingoData.length === 0) {
-    var FIXED_QUESTION = "Mach ein Foto mit möglichst vielen GLT-Mitgliedern";
-    var FIXED_INDEX    = 9; // bottom-left of the centre 4  (grid: row 2 col 1, 0-based)
-
-    var pool    = allQuestions.filter(function(q) { return q !== FIXED_QUESTION; });
-    var shuffled = shuffleArray(pool);           // 15 questions, randomised
-    shuffled.splice(FIXED_INDEX, 0, FIXED_QUESTION); // inject at slot 9
+    var shuffled = shuffleArray(allQuestions.slice()); // 12 questions, randomised
 
     bingoData = shuffled.map(function(q, i) {
       return { id: i, question: q, completed: false, photo: null };
@@ -432,9 +424,9 @@ async function createFinalImage() {
     return;
   }
 
-  if (completedCount < 16) {
+  if (completedCount < 12) {
     var go = await showConfirm(
-      'Du hast ' + completedCount + ' von 16 Feldern ausgefüllt.\n\nMöchtest du das Bingo trotzdem fertigstellen?\n\nNicht ausgefüllte Felder werden leer angezeigt.',
+      'Du hast ' + completedCount + ' von 12 Feldern ausgefüllt.\n\nMöchtest du das Bingo trotzdem fertigstellen?\n\nNicht ausgefüllte Felder werden leer angezeigt.',
       '🎊'
     );
     if (!go) return;
@@ -448,13 +440,14 @@ async function createFinalImage() {
   var ctx         = finalCanvas.getContext('2d');
   var groupName   = localStorage.getItem('bingoGroupName') || '';
   var hasName     = groupName.trim().length > 0;
-  var gridSize    = 4;
+  var gridCols    = 4;
+  var gridRows    = 3;
   var cellSize    = 400;
   var gap         = 10;
   var padding     = 20;
   var headerH     = hasName ? 175 : 110;
-  var totalW      = (cellSize * gridSize) + (gap * (gridSize - 1)) + (padding * 2);
-  var totalH      = totalW + headerH;
+  var totalW      = (cellSize * gridCols) + (gap * (gridCols - 1)) + (padding * 2);
+  var totalH      = (cellSize * gridRows) + (gap * (gridRows - 1)) + (padding * 2) + headerH;
 
   finalCanvas.width  = totalW;
   finalCanvas.height = totalH;
@@ -466,8 +459,8 @@ async function createFinalImage() {
 
   await Promise.all(bingoData.map(function(cell, index) {
     return new Promise(function(resolve) {
-      var row = Math.floor(index / gridSize);
-      var col = index % gridSize;
+      var row = Math.floor(index / gridCols);
+      var col = index % gridCols;
       var x   = padding + (col * (cellSize + gap));
       var y   = padding + headerH + (row * (cellSize + gap));
 
@@ -560,6 +553,7 @@ async function resetBingo() {
 function boot() {
   var stored = localStorage.getItem('appVersion');
   if (stored !== APP_VERSION) {
+    localStorage.removeItem('bingoData');
     localStorage.setItem('appVersion', APP_VERSION);
   }
   loadBingoData();
