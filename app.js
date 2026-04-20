@@ -13,7 +13,7 @@ const allQuestions = [
   "Mache ein Foto mit so vielen vom Organisationsteam wie möglich."
 ];
 
-const APP_VERSION = '4.0';
+const APP_VERSION = '4.1';
 
 // ── Custom Dialog ────────────────────────────────────────────
 
@@ -177,7 +177,15 @@ function loadBingoData() {
     try { bingoData = JSON.parse(saved); } catch(e) { bingoData = []; }
   }
   if (!bingoData || bingoData.length === 0) {
-    var shuffled = shuffleArray(allQuestions.slice()); // 12 questions, randomised
+    var FIXED_GLT  = "Mache ein Foto mit so vielen GLT-Mitgliedern wie möglich.";
+    var FIXED_ORGA = "Mache ein Foto mit so vielen vom Organisationsteam wie möglich.";
+
+    var pool = allQuestions.filter(function(q) { return q !== FIXED_GLT && q !== FIXED_ORGA; });
+    var shuffled = shuffleArray(pool); // 10 questions, randomised
+
+    // Insert fixed questions at middle slots 5 and 6 (row 1, cols 1 & 2 of a 4-col grid)
+    shuffled.splice(5, 0, FIXED_GLT);
+    shuffled.splice(6, 0, FIXED_ORGA);
 
     bingoData = shuffled.map(function(q, i) {
       return { id: i, question: q, completed: false, photo: null };

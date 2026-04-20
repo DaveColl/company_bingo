@@ -1,4 +1,4 @@
-const CACHE_NAME = 'aareon-bingo-v9';
+const CACHE_NAME = 'aareon-bingo-v10';
 const urlsToCache = [
   './',
   './index.html',
